@@ -13,6 +13,16 @@
 <body>
     <main id="app">
         <div id="game-input-container">
+            <div id="game-settings">
+                <label for="columns">Columns: </label>
+                <input type="number" name="columns" id="input-columns" value="20">
+                <label for="rows">Rows: </label>
+                <input type="number" name="rows" id="input-rows" value="20">
+                <label for="tile-size">Tilesize (in px): </label>
+                <input type="number" name="tile-size" id="input-tile-size" value="30">
+                <label for="random-map">Random Map: </label>
+                <input type="checkbox" name="random-map" id="input-random-map" checked>
+            </div>
             <div>
                 <button id="btn-start-game">Start Game</button>
                 <button id="btn-spawn-robot">Spawn Robot</button>

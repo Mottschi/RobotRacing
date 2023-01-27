@@ -12,7 +12,7 @@ class Terrain {
     }
 }
 
-const DEFAULT = {
+const DEFAULT_SETTINGS = {
     rows: 10,
     columns: 10,
     tileSize: 60,
@@ -32,21 +32,22 @@ class GameManager {
      * @param {Object} setup Optional setup instructions
      */
     constructor(setup) {
-        if (!setup) setup = {};
 
+        if (!setup) setup = {};
+        console.log(setup === DEFAULT_SETTINGS, setup, DEFAULT_SETTINGS)
         console.log('setting up game')
         this.running = false;
         this.state = null;
 
-        this.rows = setup.rows ? setup.rows : DEFAULT.rows;
-        this.columns = setup.columns ? setup.columns : DEFAULT.columns;
-        this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT.tileSize;
-        this.randomMap = setup.randomMap ? setup.RandomMap : DEFAULT.randomMap;
-
+        this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
+        this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
+        this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT_SETTINGS.tileSize;
+        this.randomMap = setup.randomMap !== undefined ? setup.randomMap : DEFAULT_SETTINGS.randomMap;
+        console.log(this.randomMap, setup.randomMap)
         // starting out with the possibility to change terraign, though actually
         // implementing that will mean additional work in GameBoard class as right now
         // rock, water and grass are hard coded there
-        this.terrainOptions = setup.terrainOptions ? setup.terrainOptions : DEFAULT.terrainOptions;
+        this.terrainOptions = setup.terrainOptions ? setup.terrainOptions : DEFAULT_SETTINGS.terrainOptions;
 
         this.gameBoard = new GameBoard(this.rows, this.columns, this.terrainOptions);
     }
@@ -110,6 +111,7 @@ class GameBoard {
     }
 
     randomMap() {
+        console.log('creating full random map');
         for (let row = 0; row < this.rows; row++) {
             const currentRow = [];
             this.board.push(currentRow);
@@ -128,6 +130,7 @@ class GameBoard {
         // TODO handcraft map!
         // this will load a hand crafted map, as I do not have that ready yet, will start
         // with just a full grass map
+        console.log('creating grass only map');
         for (let row = 0; row < this.rows; row++) {
             const currentRow = [];
             this.board.push(currentRow);
