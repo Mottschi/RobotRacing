@@ -1,8 +1,14 @@
+:root {
+    --tile-size: 30px;
+    --columns: 20;
+    --rows: 20;
+}
+
 .tile {
-    background-color: black;
-    border: 1px solid white;
-    width: 30px;
-    height: 30px;
+    background-color: rebeccapurple;
+    border: 1px solid black;
+    width: var(--tile-size);
+    height: var(--tile-size);
 }
 
 .grass {
@@ -11,6 +17,10 @@
 
 .grass2 {
     background-color: rgb(28, 155, 28);
+}
+
+.grass3 {
+    background-color: rgb(43, 172, 43);
 }
 
 .water {

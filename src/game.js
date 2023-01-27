@@ -13,11 +13,11 @@ class Terrain {
 }
 
 const DEFAULT = {
-    rows: 20,
-    columns: 20,
-    tileSize: 30,
+    rows: 10,
+    columns: 10,
+    tileSize: 60,
     terrainOptions: {
-        grass: new Terrain('grass', ['grass', 'grass2']),
+        grass: new Terrain('grass', ['grass', 'grass2', 'grass3']),
         water: new Terrain('water', ['water', 'water2']),
         rock: new Terrain('rock', ['rock', 'rock2']),
         lava: new Terrain('lava', ['lava']),
@@ -37,12 +37,11 @@ class GameManager {
         console.log('setting up game')
         this.running = false;
         this.state = null;
-        
+
         this.rows = setup.rows ? setup.rows : DEFAULT.rows;
         this.columns = setup.columns ? setup.columns : DEFAULT.columns;
         this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT.tileSize;
         this.randomMap = setup.randomMap ? setup.RandomMap : DEFAULT.randomMap;
-        
 
         // starting out with the possibility to change terraign, though actually
         // implementing that will mean additional work in GameBoard class as right now
@@ -58,8 +57,8 @@ class GameManager {
         this.running = true;
         this.generateGrid();
 
-        if (this.randomMap) this.gameBoard.randomSetup();
-        else this.gameBoard.defaultSetup();
+        if (this.randomMap) this.gameBoard.randomMap();
+        else this.gameBoard.defaultMap();
 
         this.gameBoard.drawBoard(this.gameBoard);
 
@@ -70,6 +69,13 @@ class GameManager {
     generateGrid() {
         console.log('generating grid')
         const boardContainer = document.getElementById('game-board-container');
+
+        // setting up the CSS variables to adjust the grid to the rows, columns 
+        // and tile size chosen in settings
+        const root = document.querySelector(':root');
+        root.style.setProperty('--columns', this.columns);
+        root.style.setProperty('--rows', this.rows);
+        root.style.setProperty('--tile-size', `${this.tileSize}px`);
         
         // reset the grid, in case there was already something in there
         boardContainer.innerHTML = '';
@@ -80,7 +86,7 @@ class GameManager {
             rowDiv.classList.add('grid-row');
             rowDiv.style.width = `${this.columns * this.tileSize}px`;
             
-            rowDiv.style.gridTemplateColumns = `repeat(${this.columns}, 1fr)`;
+            
             for (let column = 0; column < this.columns; column++) {
                 const gridTile = document.createElement('div');
                 gridTile.classList.add('tile');
@@ -103,7 +109,7 @@ class GameBoard {
         this.terrain = terrain;
     }
 
-    randomSetup() {
+    randomMap() {
         for (let row = 0; row < this.rows; row++) {
             const currentRow = [];
             this.board.push(currentRow);
@@ -118,7 +124,7 @@ class GameBoard {
         }
     }
 
-    defaultSetup () {
+    defaultMap () {
         // TODO handcraft map!
         // this will load a hand crafted map, as I do not have that ready yet, will start
         // with just a full grass map
