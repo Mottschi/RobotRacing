@@ -1,0 +1,34 @@
+.tile {
+    background-color: black;
+    border: 1px solid white;
+    width: 30px;
+    height: 30px;
+}
+
+.grass {
+    background-color: forestgreen;
+}
+
+.grass2 {
+    background-color: rgb(28, 155, 28);
+}
+
+.water {
+    background-color: blue;
+}
+
+.water2 {
+    background-color: rgb(57, 57, 252);
+}
+
+.rock {
+    background-color: rgb(80, 78, 78);
+}
+
+.rock2 {
+    background-color: rgb(62, 60, 60);
+}
+
+.lava {
+    background-color: firebrick;
+}
