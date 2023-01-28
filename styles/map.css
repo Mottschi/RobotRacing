@@ -2,6 +2,10 @@
     --tile-size: 30px;
     --columns: 20;
     --rows: 20;
+    --robot-up: url('../assets/images/robot/robot_3Dred - up.png'):
+    --robot-right: url('../assets/images/robot/robot_3Dred - right.png'):
+    --robot-down: url('../assets/images/robot/robot_3Dred - down.png'):
+    --robot-left: url('../assets/images/robot/robot_3Dred - left.png'):
 }
 
 .tile {
@@ -41,4 +45,10 @@
 
 .lava {
     background-color: firebrick;
+}
+
+#player {
+    background-image: var(--robot-up);
+    background-repeat: no-repeat;
+    background-size: contain;
 }

@@ -1,18 +1,33 @@
 @import url('./reset.css');
 @import url('./map.css');
 
+:root {
+    --background-color:#4158D0;
+    --background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
+    ;
+}
+
+@font-face {
+    font-family: 'projectsfenotype';
+    src: url('../assets/font/projects-webfont.woff2') format('woff2'),
+         url('../assets/font/projects-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
 .grid-row{
     display: grid;
     margin: 0;
     padding: 0;
     grid-template-columns: repeat(var(--columns), 1fr);
+    width: calc(var(--tile-size * var(--columns)));
 }
 
 #game-input-container {
     width: 100%;
-    height: 100%;
-    min-height: 600px;
-    background-color: rebeccapurple;
+    /* height: calc(var(--rows) * var(--tile-size)); */
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -26,11 +41,66 @@
 #app {
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: space-between;
 
 }
 
 #game-settings {
     color: white;
+}
+
+body {
+    background-color: var(--background-color);
+    background-image: var(--background-image);
+}
+
+#game-board-container {
+    margin: var(--tile-size);
+}
+
+#navbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--tile-size);
+}
+
+#navbar .game-logo {
+    font-size: 2rem;
+    font-family: 'projectsfenotype';
+    
+}
+
+#navbar .settings {
+    background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+    font-size: 2rem;
+    width: 30px;
+    aspect-ratio: 1; 
+}
+
+#dlg-settings .settings-container{
+    display: flex;
+    flex-direction: column;
+}
+
+#dlg-settings .settings-input {
+    display: flex;
+    justify-content: space-between;
+}
+
+#dlg-settings .settings-random {
+    display: none;
+}
+
+/* TODO This only works in chrome, may need to come up with a better 
+solution (could hide/show via JS instead?) */
+#dlg-settings:has(#input-random-map:checked) .settings-random{
+    display: flex;
 }
