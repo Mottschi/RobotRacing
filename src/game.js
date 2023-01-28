@@ -13,9 +13,9 @@ class Terrain {
 }
 
 export const DEFAULT_SETTINGS = {
-    rows: 10,
-    columns: 10,
-    tileSize: 60,
+    rows: 20,
+    columns: 20,
+    tileSize: 30,
     terrainOptions: {
         grass: new Terrain('grass', ['grass', 'grass2', 'grass3']),
         water: new Terrain('water', ['water', 'water2']),

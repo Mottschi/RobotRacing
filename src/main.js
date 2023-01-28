@@ -72,10 +72,17 @@ function closeSettingsWithoutSaving() {
 }
 
 function saveSettings() {
-    settings.rows = Number(inputRows.value);
-    settings.columns = Number(inputColumns.value);
     settings.tileSize = Number(inputTilesize.value);
     settings.randomMap = inputRandomMap.checked;
+
+    if (settings.randomMap) {
+        settings.rows = Number(inputRows.value);
+        settings.columns = Number(inputColumns.value);
+    } else {
+        settings.rows = DEFAULT_SETTINGS.rows;
+        settings.columns = DEFAULT_SETTINGS.columns;
+    }
+
     dlgSettings.close();
 
     // randomMap, rows and columns are only used on starting a new game
