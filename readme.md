@@ -26,4 +26,6 @@ Sound effects created by Sebastian Mottschall with the help of bfxr - https://ww
 
 
 ### Favicon
-Favicon (no changes made) created by Omara Abderraouf - https://icon-icons.com/icon/robot/83633 - and distributed via CC Attribution license (https://creativecommons.org/licenses/by/4.0/)
+Robot icon (no changes made) created by Omara Abderraouf and distributed via CC Attribution license.
+Source: https://icon-icons.com/icon/robot/83633
+License: https://creativecommons.org/licenses/by/4.0/
