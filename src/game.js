@@ -7,8 +7,8 @@ import { getRandomArrayElement } from "./helpers.js";
 
 import easyMap from '../assets/maps/easy.js';
 import mediumMap from '../assets/maps/medium.js';
-import hardMap from '../assets/maps/hard.js'
-console.log(hardMap);
+import hardMap from '../assets/maps/hard.js';
+import mountainMap from '../assets/maps/mountains.js';
 
 class Terrain {
     constructor(name, classes) {
@@ -168,9 +168,10 @@ class GameBoard {
         // this will load a hand crafted map, as I do not have that ready yet, will start
         // with just a full grass map
 
-        const savedMap = easyMap;
+        // const savedMap = easyMap;
         // const savedMap = mediumMap;
         // const savedMap = hardMap;
+        const savedMap = mountainMap;
 
         this.rows = savedMap.length;
         this.columns = savedMap[0].length;
@@ -267,7 +268,8 @@ export class LevelEditor extends GameManager{
         const row = tileDiv.getAttribute('row');
         const column = tileDiv.getAttribute('column');
         const tile = this.gameBoard.board[row][column];
-        tileDiv.classList.remove(tile.terrainName)
+        console.log(tile)
+        tileDiv.classList.remove(tile.terrainClass)
         switch (tile.terrainName) {
             case 'grass':
                 tile.terrainName = 'rock';
@@ -282,6 +284,7 @@ export class LevelEditor extends GameManager{
                 tile.terrainName = 'grass';
                 break;
         }
+        tile.terrainClass = tile.terrainName;
         tileDiv.classList.add(tile.terrainName);
     }
 }
