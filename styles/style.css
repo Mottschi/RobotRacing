@@ -104,3 +104,7 @@ solution (could hide/show via JS instead?) */
 #dlg-settings:has(#input-random-map:checked) .settings-random{
     display: flex;
 }
+
+#dev-options {
+    display: block;
+}

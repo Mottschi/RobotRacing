@@ -30,15 +30,23 @@
                 <button id="btn-move-3">Move 3</button>
                 <button id="btn-turn-left">Turn Left</button>
                 <button id="btn-turn-right">Turn Right</button>
-                <button id="btn-unknown">[DEV]: Export map</button>
+            </div>
+
+            <div id="dev-options">
+                <button id="btn-export-map">[DEV]: Export map</button>
+                <button id="btn-level-editor">[DEV]: Open Level Editor</button>
             </div>
         </div>
 
         <div id="game-board-container"></div>
+
+    </main>
+
+    <section id="invisible-elements">
         <dialog id="dlg-settings">
             <div class="settings-container">
                 <h3>Game Settings:</h3>
-
+    
                 <div class="settings-input">
                     <label for="random-map">Random Map: </label>
                     <input type="checkbox" name="random-map" id="input-random-map">
@@ -48,25 +56,54 @@
                     <label for="columns">Columns: </label>
                     <input type="number" name="columns" id="input-columns" value="10" step="5" min="10" max="30">
                 </div>
-
+    
                 <div id='settings-rows' class="settings-input settings-random">
                     <label for="rows">Rows: </label>
                     <input type="number" name="rows" id="input-rows" value="10" step="5" min="10" max="30">
+                </div>
+    
+                <div id='settings-music'class="settings-input">
+                    <label for="music">Music: </label>
+                    <input type="checkbox" name="music" id="input-music">
+                </div>
+
+                <div id="settings-music-volume" class="settings-input">
+                    <label for="music-volume">Music Volume: </label>
+                    <input type="range" name="music-volume" id="input-music-volume">
+                </div>
+    
+                <div id='settings-sound-effects'class="settings-input">
+                    <label for="sound-effects">Sound Effects: </label>
+                    <input type="checkbox" name="sound-effects" id="input-sound-effects">
+                </div>
+
+                <div id="settings-sound-effects-volume" class="settings-input">
+                    <label for="music-volume">SFX Volume: </label>
+                    <input type="range" name="sound-effects-volume" id="input-sound-effects-volume">
                 </div>
                 
                 <div id='settings-tile-size'class="settings-input">
                     <label for="tile-size">Tilesize (in px): </label>
                     <input type="number" name="tile-size" id="input-tile-size" value="10"step="5" min="10" max="100">
                 </div>
-
+    
                 <div class="close-dialog">
                     <button id="btn-save-settings">Speichern</button>
                     <button id="btn-cancel-settings">Abbrechen</button>
                 </div>
             </div>
-            
+        </dialog>
+    
+        <dialog id="dlg-map-complete">
+    
+        </dialog>
+    
+        <dialog id="dlg-game-over">
             
         </dialog>
-    </main>
+
+    </section>
+
+
 </body>
 </html>
