@@ -99,7 +99,7 @@ body {
     display: none;
 }
 
-/* TODO This only works in chrome, may need to come up with a better 
+/* TODO This only works in chrome, need to come up with a JS solution 
 solution (could hide/show via JS instead?) */
 #dlg-settings:has(#input-random-map:checked) .settings-random{
     display: flex;

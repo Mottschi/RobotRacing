@@ -38,7 +38,7 @@ const root = document.querySelector(':root');
 let currentBoard = null;
 
 
-// NOTE Setting event handles to control elements
+// TODO Setting event handlers for the control elements (development only, needs to be removed/replaced by dice picking)
 btnStart.addEventListener('click', startGame);
 btnLevelEditor.addEventListener('click', startLevelEditor);
 btnOpenSettings.addEventListener('click', showSettings);
@@ -75,12 +75,12 @@ generateInputValuesFromSettings();
  */
 function startGame() {
     const gm = new GameManager(settings);
-    currentBoard = gm.run();
+    currentBoard = gm.startGame();
 }
 
 function startLevelEditor() {
     const gm = new LevelEditor(settings);
-    currentBoard = gm.run();
+    currentBoard = gm.startGame();
 }
 
 /**

@@ -11,7 +11,6 @@ import hardMap from '../assets/maps/hard.js';
 import mountainMap from '../assets/maps/mountains.js';
 import startinglocationtest from "../assets/maps/startinglocationtest.js";
 
-
 class Terrain {
     constructor(name, classes) {
         this.name = name;
@@ -21,9 +20,9 @@ class Terrain {
 
 /**
  * Default settings for the game. These values can be modified
- * by the application and will effect
- * the ongoing game: music, soundEffects, tileSize
- * the next new game: rows, columns, randomMap, players (if I get to that point...)
+ * by the application and will effect either
+ * - the ongoing game: music, soundEffects, tileSize
+ * - the next new game: rows, columns, randomMap, players (if I get to that point...)
  */
 export const DEFAULT_SETTINGS = {
     rows: 10,
@@ -80,87 +79,82 @@ class GameManager {
         }
         
         this.terrainOptions = GAME_DATA.terrainOptions;
-
+        let startingLocation;
         if (this.randomMap) {
             // when we load a random game board, the size depends on settings
             this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
             this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
             this.gameBoard = new RandomGameBoard(this.terrainOptions, this.rows, this.columns);
+            startingLocation = this.gameBoard.getRandomStartingLocation()
         } else {
             // when we load a default game board, the size will depend on the loaded map
             this.gameBoard = new DefaultGameBoard(this.terrainOptions);
             this.rows = this.gameBoard.rows;
             this.columns = this.gameBoard.columns;
+            startingLocation = this.gameBoard.getDefaultStartingLocation()
         }
 
         // later on, it might be nice to add multiplayer, but for now, playercount is hardset to 1
         this.playerCount = 1;
-        this.player = new Player('Player 1', this.gameBoard.getRandomStartingLocation());
+        this.player = new Player('Player 1', new Location(startingLocation.row, startingLocation.column));
 
         this.uiController = new UIController(this.rows, this.columns);
     }
 
-    run() {
+    startGame() {
         this.running = true;        
         this.uiController.setupNewGame(this.gameBoard, this.player);
 
-        // resetting event listeners on the buttons to avoid multiple player characters showing on later games
-        // TODO test out if this is still necessary once the actual rolling dice for input is done
-        document.getElementById('game-inputs').innerHTML += '';
+        this.state = new InputState(caller);
+        this.state.exit();
 
-        // NOTE temp dev code
-        const btnLeft = document.querySelector('#btn-turn-left');
-        const btnRight = document.querySelector('#btn-turn-right');
-        const btnMove1 = document.querySelector('#btn-move-1');
-        const btnMove2 = document.querySelector('#btn-move-2');
-        const btnMove3 = document.querySelector('#btn-move-3');
+        // // resetting event listeners on the buttons to avoid multiple player characters showing on later games
+        // // TODO test out if this is still necessary once the actual rolling dice for input is done
+        // document.getElementById('game-inputs').innerHTML += '';
 
-        btnLeft.addEventListener('click', ()=>{
-            const command = new TurnLeftCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.alignPlayerSprite(this.player);
-        })
+        // // NOTE temp dev code
+        // const btnLeft = document.querySelector('#btn-turn-left');
+        // const btnRight = document.querySelector('#btn-turn-right');
+        // const btnMove1 = document.querySelector('#btn-move-1');
+        // const btnMove2 = document.querySelector('#btn-move-2');
+        // const btnMove3 = document.querySelector('#btn-move-3');
 
-        btnRight.addEventListener('click', ()=>{
-            const command = new TurnRightCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.alignPlayerSprite(this.player);
-        })
+        // btnLeft.addEventListener('click', ()=>{
+        //     const command = new TurnLeftCommand(this.player, this.gameBoard);
+        //     command.execute();
+        //     this.uiController.alignPlayerSprite(this.player);
+        // })
 
-        btnMove1.addEventListener('click', ()=>{
-            const originalPosition = {...this.player.location};
-            const command = new MoveOneCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        })
+        // btnRight.addEventListener('click', ()=>{
+        //     const command = new TurnRightCommand(this.player, this.gameBoard);
+        //     command.execute();
+        //     this.uiController.alignPlayerSprite(this.player);
+        // })
 
-        btnMove2.addEventListener('click', ()=>{
-            const originalPosition = {...this.player.location};
-            const command = new MoveTwoCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        })
+        // btnMove1.addEventListener('click', ()=>{
+        //     const originalPosition = {...this.player.location};
+        //     const command = new MoveOneCommand(this.player, this.gameBoard);
+        //     command.execute();
+        //     this.uiController.movePlayerSprite(this.player, originalPosition);
+        // })
 
-        btnMove3.removeEventListener('click', m3);
-        btnMove3.addEventListener('click', m3.bind(this))
+        // btnMove2.addEventListener('click', ()=>{
+        //     const originalPosition = {...this.player.location};
+        //     const command = new MoveTwoCommand(this.player, this.gameBoard);
+        //     command.execute();
+        //     this.uiController.movePlayerSprite(this.player, originalPosition);
+        // })
 
-        function m3() {
-            const originalPosition = {...this.player.location};
-            const command = new MoveThreeCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        }
+        // btnMove3.removeEventListener('click', m3);
+        // btnMove3.addEventListener('click', m3.bind(this))
 
-
-        this.state = new InputState();
-        this.state.turn();
-
-        return (this.gameBoard.board)
+        // function m3() {
+        //     const originalPosition = {...this.player.location};
+        //     const command = new MoveThreeCommand(this.player, this.gameBoard);
+        //     command.execute();
+        //     this.uiController.movePlayerSprite(this.player, originalPosition);
+        // }
     }
-
-    /* TODO: Think about a way to refactor this - move it from inside the game classes to outside
-        (game should have only the logic, no direct effect on the html - maybe add a 
-        UIController? or just keep it in main) */
 }
 
 class GameBoard {
@@ -169,8 +163,16 @@ class GameBoard {
         this.terrain = terrain;
     }
 
+    // picks any location on the bottom row that has grass, if there is none, creates one
     getRandomStartingLocation() {
         return getRandomArrayElement(this.board[this.board.length-1].filter(tile => tile.terrainName === 'grass'));
+    }
+
+    getDefaultStartingLocation() {
+        return this.board[this.board.length-1].reduce((acc, tile) => {
+            if (tile.terrainName === 'grass') return tile;
+            return acc;
+        })
     }
 }
 
@@ -252,22 +254,95 @@ class Tile {
     }
 }
 
+/**
+ * 'Abstract' class/interface (neither of which exists properly in JS unfortunately)
+ *  Not to be used directly, only for inheritance purpose. All subclasses must override 
+ *  the turn and enter methods with an actual implementation.
+ * 
+ * Because of the asynchrounus nature of JS, trying out a way for the state to be the one to 
+ * call the gamemanager back once it's time to move onto next state, so we need the game manager
+ * to add itself as argument to the constructor of a state
+ */
 class State {
-    enter () {
-
+    constructor (owner, player) {
+        this.owner = owner;
+        this.player = player;
     }
 
-    turn () {
+    enter () {
+        throw Error('Each subclass of State must implement the enter method themselves!');
+    }
 
+    exit () {
+        throw Error('Each subclass of State must implement the exit method themselves!');
     }
 }
 
 class InputState extends State {
+    /**
+     * Create a new input state.
+     * @param {GameManager} owner 
+     * @param {Player} player 
+     */
+    constructor(owner, player) {
+        super(owner, player);
+        this.commandQueue = [];
+    }
+    enter () {
+        // When entering input state, we have to:
 
+        // 0. (show user we are entering input state)
+
+
+        // 1. roll the players dice
+
+
+        // 2. display dice results
+
+
+        // 3. set up the event handlers so that player can pick order of execution for his commands
+
+
+        // 4. set up event handler that will allow player to confirm his moves after order is picked. 
+        //    this will then call the states exit() method
+    }
+
+    exit () {
+        this.owner.state = new ExecuteCommandQueueState(this.owner, this.player, this.commandQueue);
+        this.owner.onStateChange();
+    }
 }
 
-class ExecuteState extends State {
+class ExecuteCommandQueueState extends State {
+    /**
+     * Create a new state to execute all commands of a command queue
+     * @param {GameManager} owner 
+     * @param {Player} player 
+     * @param {Array} commandQueue 
+     */
+    constructor(owner, player, commandQueue) {
+        super(owner, player);
+        this.commandQueue = commandQueue;
+        this.currentCommand = 0;
+    }
 
+    enter () {
+        // on entering this state, we
+        // 1. start working off the commands one by one
+        // 2. check after each command whether the player is still alive and has not found the flag
+        // 3. once either all commands are over or game is over, call the states exit method
+    }
+
+    executeCommand() {
+        const command = this.commandQueue[this.currentCommand++];
+        command.execute()
+
+    }
+
+    exit () {
+        this.owner.state = new InputState(this.owner, this.player);
+        this.owner.onStateChange();
+    }
 }
 
 /**
@@ -283,6 +358,8 @@ class Location {
 
 class Player {
     constructor(name, location) {
+        console.log(location)
+
         this.name = name;
         this.location = location;
         this.sprite = getRandomArrayElement(GAME_DATA.playerSprites);
@@ -512,14 +589,12 @@ class TurnRightCommand extends Command {
  * but is still part of the "game engine"
  */
 export class LevelEditor extends GameManager{
-    run() {
+    startGame() {
         // initialize all tiles with grass
         this.gameBoard = new LevelEditorBoard(this.terrainOptions, this.rows, this.columns);
 
-        // set up the HTML connections
+        // set up the level editor in the browser
         this.uiController.setupNewGame(this.gameBoard, this.player);
-
-
 
         // TODO consider moving html interaction to uiController 
         // (worth it considering level editor is not part of final game?)
