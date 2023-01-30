@@ -3,12 +3,14 @@
 * the GameManager constructor
 */
 
-import { getRandomArrayElement } from "./helpers.js";
+import { getRandomArrayElement, DIRECTIONS, UIController } from "./helpers.js";
 
 import easyMap from '../assets/maps/easy.js';
 import mediumMap from '../assets/maps/medium.js';
 import hardMap from '../assets/maps/hard.js';
 import mountainMap from '../assets/maps/mountains.js';
+import startinglocationtest from "../assets/maps/startinglocationtest.js";
+
 
 class Terrain {
     constructor(name, classes) {
@@ -24,20 +26,23 @@ class Terrain {
  * the next new game: rows, columns, randomMap, players (if I get to that point...)
  */
 export const DEFAULT_SETTINGS = {
-    rows: 20,
-    columns: 20,
-    tileSize: 30,
+    rows: 10,
+    columns: 10,
+    tileSize: 50,
     randomMap: false,
     players: 1,
     music: false,
     soundEffects: false,
-    
 }
 
 /**
  * Game data that should not be modified, but may need to be accessed outside 
  * the game logic itself (for example to set up audio controller or for a level
  * editor) 
+ * 
+ * Eventually it would be nice if we can have all variability in here, so game can be changed
+ * (new terrain options, different sound effects/music, maps, different dice) just by changing
+ * the game data
  */
 export const GAME_DATA = {
     terrainOptions: {
@@ -53,6 +58,8 @@ export const GAME_DATA = {
         explosion: 'explosion.wav',
         water: 'water.wav',
     },
+    playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
+    startingLife: 5,
 }
 
 class GameManager {
@@ -61,12 +68,9 @@ class GameManager {
      * @param {Object} setup Optional setup instructions
      */
     constructor(setup) {
-        if (!setup) setup = {};
         this.running = false;
         this.state = null;
 
-        this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
-        this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
         this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT_SETTINGS.tileSize;
         this.randomMap = setup.randomMap !== undefined ? setup.randomMap : DEFAULT_SETTINGS.randomMap;
 
@@ -77,101 +81,109 @@ class GameManager {
         
         this.terrainOptions = GAME_DATA.terrainOptions;
 
-        this.gameBoard = new GameBoard(this.rows, this.columns, this.terrainOptions);
+        if (this.randomMap) {
+            // when we load a random game board, the size depends on settings
+            this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
+            this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
+            this.gameBoard = new RandomGameBoard(this.terrainOptions, this.rows, this.columns);
+        } else {
+            // when we load a default game board, the size will depend on the loaded map
+            this.gameBoard = new DefaultGameBoard(this.terrainOptions);
+            this.rows = this.gameBoard.rows;
+            this.columns = this.gameBoard.columns;
+        }
+
+        // later on, it might be nice to add multiplayer, but for now, playercount is hardset to 1
+        this.playerCount = 1;
+        this.player = new Player('Player 1', this.gameBoard.getRandomStartingLocation());
+
+        this.uiController = new UIController(this.rows, this.columns);
     }
 
     run() {
-        this.running = true;
+        this.running = true;        
+        this.uiController.setupNewGame(this.gameBoard, this.player);
 
+        // resetting event listeners on the buttons to avoid multiple player characters showing on later games
+        // TODO test out if this is still necessary once the actual rolling dice for input is done
+        document.getElementById('game-inputs').innerHTML += '';
 
-        if (this.randomMap) this.gameBoard.randomMap();
-        else {
-            const defaultBoardSize = this.gameBoard.loadDefaultMap();
-            this.rows = defaultBoardSize.rows;
-            this.columns = defaultBoardSize.columns;
+        // NOTE temp dev code
+        const btnLeft = document.querySelector('#btn-turn-left');
+        const btnRight = document.querySelector('#btn-turn-right');
+        const btnMove1 = document.querySelector('#btn-move-1');
+        const btnMove2 = document.querySelector('#btn-move-2');
+        const btnMove3 = document.querySelector('#btn-move-3');
+
+        btnLeft.addEventListener('click', ()=>{
+            const command = new TurnLeftCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.alignPlayerSprite(this.player);
+        })
+
+        btnRight.addEventListener('click', ()=>{
+            const command = new TurnRightCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.alignPlayerSprite(this.player);
+        })
+
+        btnMove1.addEventListener('click', ()=>{
+            const originalPosition = {...this.player.location};
+            const command = new MoveOneCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        })
+
+        btnMove2.addEventListener('click', ()=>{
+            const originalPosition = {...this.player.location};
+            const command = new MoveTwoCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        })
+
+        btnMove3.removeEventListener('click', m3);
+        btnMove3.addEventListener('click', m3.bind(this))
+
+        function m3() {
+            const originalPosition = {...this.player.location};
+            const command = new MoveThreeCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
         }
 
-        console.log(this.columns, this.rows)
 
-        this.generateGrid();
-
-        this.gameBoard.drawBoard(this.gameBoard);
-
-        this.state = new InputState();    
+        this.state = new InputState();
         this.state.turn();
-
-        this.audioController.playClip('explosion');
 
         return (this.gameBoard.board)
     }
 
-    // TODO: Think about a way to refactor this - move it from inside the game to outside
-    // (game should have only the logic, no direct effect on the html - maybe add a UIController? or just keep it in main)
-    generateGrid() {
-        console.log('generating grid')
-        const boardContainer = document.getElementById('game-board-container');
-
-        // setting up the CSS variables to adjust the grid to the rows, columns 
-        // and tile size chosen in settings
-        const root = document.querySelector(':root');
-        root.style.setProperty('--columns', this.columns);
-        root.style.setProperty('--rows', this.rows);
-        
-        console.log(this.columns, this.rows)
-        
-        // reset the grid, in case there was already something in there
-        boardContainer.innerHTML = '';
-
-        // generate a new grid
-        for (let row = 0; row < this.rows; row++) {
-            const rowDiv = document.createElement('div');
-            rowDiv.classList.add('grid-row');           
-            
-            for (let column = 0; column < this.columns; column++) {
-                const gridTile = document.createElement('div');
-                gridTile.classList.add('tile');
-                gridTile.setAttribute('row', row);
-                gridTile.setAttribute('column', column);
-                rowDiv.appendChild(gridTile);
-            }
-            boardContainer.appendChild(rowDiv);
-        }
-    }
-
+    /* TODO: Think about a way to refactor this - move it from inside the game classes to outside
+        (game should have only the logic, no direct effect on the html - maybe add a 
+        UIController? or just keep it in main) */
 }
 
 class GameBoard {
-    constructor(rows, columns, terrain) {
-        this.rows = rows;
-        this.columns = columns;
+    constructor(terrain) {
         this.board = [];
         this.terrain = terrain;
     }
 
-    randomMap() {
-        for (let row = 0; row < this.rows; row++) {
-            const currentRow = [];
-            this.board.push(currentRow);
-            for (let column = 0; column < this.columns; column++) {
-                const rng = Math.random();
-                let type = this.terrain.grass;
-                if (rng > .98) type = this.terrain.lava;
-                else if (rng > .93) type = this.terrain.rock
-                else if (rng > .78) type = this.terrain.water;
-                currentRow.push(new Tile(row, column, type))
-            }
-        }
+    getRandomStartingLocation() {
+        return getRandomArrayElement(this.board[this.board.length-1].filter(tile => tile.terrainName === 'grass'));
     }
+}
 
-    loadDefaultMap () {
-        // TODO change saved map from hard coded in the .js file to being imported from json
-        // this will load a hand crafted map, as I do not have that ready yet, will start
-        // with just a full grass map
+class DefaultGameBoard extends GameBoard {
+    constructor(terrain) {
+        super(terrain);
 
-        // const savedMap = easyMap;
-        // const savedMap = mediumMap;
-        // const savedMap = hardMap;
-        const savedMap = mountainMap;
+        let savedMap
+        savedMap = easyMap;
+        // savedMap = mediumMap;
+        // savedMap = hardMap;
+        // savedMap = mountainMap;
+        savedMap = startinglocationtest;
 
         this.rows = savedMap.length;
         this.columns = savedMap[0].length;
@@ -186,28 +198,45 @@ class GameBoard {
                 currentRow.push(tile)
             }
         }
-
-        return {rows: this.rows, columns: this.columns};
     }
+}
 
-    loadGrassMap() {
+class RandomGameBoard extends GameBoard {
+    constructor(terrain, rows, columns) {
+        super(terrain);
+        this.rows = rows;
+        this.columns = columns;
+
+        for (let row = 0; row < this.rows; row++) {
+            const currentRow = [];
+            this.board.push(currentRow);
+            for (let column = 0; column < this.columns; column++) {
+                const rng = Math.random();
+                let type = this.terrain.grass;
+
+                // TODO Find a way to move the terrain rarity to game data (terrain options)
+                // instead of hardcoding it
+                if (rng > .98) type = this.terrain.lava;
+                else if (rng > .93) type = this.terrain.rock
+                else if (rng > .78) type = this.terrain.water;
+                currentRow.push(new Tile(row, column, type))
+            }
+        }
+    }
+}
+
+class LevelEditorBoard extends GameBoard {
+    constructor(terrain, rows, columns) {
+        super(terrain);
+        this.rows = rows;
+        this.columns = columns;
+
         for (let row = 0; row < this.rows; row++) {
             const currentRow = [];
             this.board.push(currentRow);
             for (let column = 0; column < this.columns; column++) {
                 let tile = new Tile(row, column, GAME_DATA.terrainOptions['grass']);
                 currentRow.push(tile)
-            }
-        }
-    }
-
-    drawBoard() {
-        if (document.querySelectorAll('#game-board-container > .grid-row > .tile').length !== this.columns * this.rows)
-            throw Error('[GameBoard]: Unable to draw map on this game board');
-
-        for (let row = 0; row < this.rows; row++) {
-            for (let column = 0; column < this.columns; column++) {
-                document.querySelector(`[row='${row}'][column='${column}'`).classList.add(this.board[row][column].terrainClass);
             }
         }
     }
@@ -241,22 +270,259 @@ class ExecuteState extends State {
 
 }
 
+/**
+ * Basically a 2d Vector datastructure, but for clarity the values are called 
+ * row and column instead of x and y
+ */
+class Location {
+    constructor(row, column) {
+        this.row = row;
+        this.column = column;
+    }
+}
+
 class Player {
+    constructor(name, location) {
+        this.name = name;
+        this.location = location;
+        this.sprite = getRandomArrayElement(GAME_DATA.playerSprites);
+        this.lifes = GAME_DATA.startingLife;
 
+        // for now, we only have one type of die so this could be simplified
+        // but one of the addon ideas for the game is to variants, so we keep that option
+        // open right now
+        this.dice = [new Die(), new Die(), new Die()];
+
+        // for now, players always start facing upwards, could be changed later
+        this.facingDirection = 0;
+    }
+
+    /**
+     * Rolls all of the players dice and returns an Array of the resulting commands
+     */
+    rollDice() {
+        return this.dice.map(die => die.roll());
+    }
 }
 
-class Dice {
+/**
+ * Die that contains a number of options. Can be rolled to receive a command class (that can then be used to receive a command)
+ */
+class Die {
+    constructor() {
+        this.options = [
+            TurnLeftCommand,
+            TurnRightCommand,
+            MoveOneCommand,
+            MoveTwoCommand,
+            MoveThreeCommand,
+        ]
+    }
 
+    roll () {
+        return getRandomArrayElement(this.options);
+    }
 }
 
+/**
+ * 'Abstract' class/interface (neither of which exists properly in JS unfortunately)
+ *  Not to be used directly, only for inheritance purpose. All subclasses must override 
+ *  the execute method with an actual implementation.
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class Command {
+    constructor(player) {
+        this.player = player;
+    }
+
+    execute() {
+        throw Error('Each subclass of Command must implement the execute method themselves!');
+    }
+}
+
+class MoveCommand extends Command {
+    constructor(player, gameBoard) {
+        super(player);
+        this.gameBoard = gameBoard;
+        this.rows = gameBoard.rows;
+        this.columns = gameBoard.columns;
+    }
+
+    /**
+     * Used to revert the last step from within a move command
+     */
+    stepBack() {
+        switch (this.player.facingDirection) {
+            case 0:
+                this.player.location.row++;
+                break;
+            case 1:
+                this.player.location.column--;
+                break;
+            case 2:
+                this.player.location.row--;
+                break;
+            case 3:
+                this.player.location.column++;
+                break;
+        }
+    }
+
+    oneStep() {
+        // check for map boundaries before adjuisting location
+        // hitting boundaries does not cause damage or interrupt execution of further commands
+        switch (this.player.facingDirection) {
+            case 0:
+                if (this.player.location.row > 0) this.player.location.row--;
+                break;
+            case 1:
+                if (this.player.location.column < this.columns - 1) this.player.location.column++;
+                break;
+            case 2:
+                if (this.player.location.row < this.rows - 1) this.player.location.row++;
+                break;
+            case 3:
+                if (this.player.location.column > 0) this.player.location.column--;
+                break;
+        }
+
+        // Prepare the result to return, then check the terrain we landed on and act accordingly
+        let commandResult = {
+            damage: 0, 
+            continue: true,
+            continueCurrentMoveCommand: false,
+            landedOnTerrain: this.gameBoard.board[this.player.location.row][this.player.location.column].terrainName
+        }
+
+        switch (commandResult.landedOnTerrain) {
+            case 'grass':
+                commandResult.continueCurrentMoveCommand = true;
+                break;
+            case 'lava':
+                commandResult.damage = 99;
+                commandResult.continue = false;
+                break;
+            case 'rock':
+                commandResult.damage = 1;
+                this.stepBack();
+                break;
+            case 'water':
+                commandResult.damage = 1;
+                commandResult.continue = false;
+                this.stepBack();
+                break;
+        }
+
+        return commandResult;
+    }
+}
+
+/**
+ * Executing a MoveOneCommand moves the oplayer one step forward, if possible
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class MoveOneCommand extends MoveCommand {
+    execute() {
+        return this.oneStep();
+    }
+}
+
+/**
+ * Executing a MoveTwoCommand moves the oplayer two step forward, if possible
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class MoveTwoCommand extends MoveCommand {
+    execute() {
+        let commandResult;
+        for (let i = 0; i < 2; i++) {
+            commandResult = this.oneStep();
+            if (!commandResult.continueCurrentMoveCommand) return commandResult;
+        }
+        return commandResult;
+    }   
+}
+
+
+/**
+ * Executing a MoveThreeCommand moves the oplayer three steps forward, if possible
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class MoveThreeCommand extends MoveCommand {
+    execute() {
+        let commandResult;
+        for (let i = 0; i < 3; i++) {
+            commandResult = this.oneStep();
+            if (!commandResult.continueCurrentMoveCommand) return commandResult;
+        }
+        return commandResult;
+    }  
+}
+
+/**
+ * Executing a TurnLeftCommand adjusts the direction the player is facing 90 degrees left
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class TurnLeftCommand extends Command {
+    execute() {
+        this.player.facingDirection = (this.player.facingDirection - 1);
+        // As in JS, modulo of a negative number returns a negative value, 
+        // we cannot use the modulo to access the corrected index here, have to check directly for negative value
+        if (this.player.facingDirection < 0) this.player.facingDirection += 4;
+        return {damage: 0, continue: true};
+    }
+}
+
+/**
+ * Executing a TurnRightCommand adjusts the direction the player is facing 90 degrees right
+ * 
+ * Executing a command will return an object with the properties
+ * damage - the amount of damage taken when performing this command
+ * conntinue - whether execution of the CommandQueue can continue (player stops for good 
+ *              when hitting water)
+ */
+class TurnRightCommand extends Command {
+    execute() {
+        this.player.facingDirection = (this.player.facingDirection + 1) % 4;
+        return {damage: 0, continue: true};
+    }
+}
+
+/**
+ * Level Editor - used for handcrafting levels, Dev tool that will not be visible in final game
+ * but is still part of the "game engine"
+ */
 export class LevelEditor extends GameManager{
     run() {
-        // generate the grid
-        this.generateGrid();
         // initialize all tiles with grass
-        this.gameBoard.loadGrassMap();
-        this.gameBoard.drawBoard();
+        this.gameBoard = new LevelEditorBoard(this.terrainOptions, this.rows, this.columns);
 
+        // set up the HTML connections
+        this.uiController.setupNewGame(this.gameBoard, this.player);
+
+
+
+        // TODO consider moving html interaction to uiController 
+        // (worth it considering level editor is not part of final game?)
 
         // attach event handlers to all tiles that cycle through the terrain options on click
         document.querySelectorAll('.tile').forEach(tile => tile.addEventListener('click', this.changeTerrain.bind(this)));
@@ -268,7 +534,6 @@ export class LevelEditor extends GameManager{
         const row = tileDiv.getAttribute('row');
         const column = tileDiv.getAttribute('column');
         const tile = this.gameBoard.board[row][column];
-        console.log(tile)
         tileDiv.classList.remove(tile.terrainClass)
         switch (tile.terrainName) {
             case 'grass':

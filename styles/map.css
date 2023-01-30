@@ -2,10 +2,9 @@
     --tile-size: 30px;
     --columns: 20;
     --rows: 20;
-    --robot-up: url('../assets/images/robot/robot_3Dred - up.png'):
-    --robot-right: url('../assets/images/robot/robot_3Dred - right.png'):
-    --robot-down: url('../assets/images/robot/robot_3Dred - down.png'):
-    --robot-left: url('../assets/images/robot/robot_3Dred - left.png'):
+    --player-sprite: none;
+    --player-original-sprite: none;
+    --visibleWhileGameIsRunning: hidden;
 }
 
 .tile {
@@ -48,7 +47,24 @@
 }
 
 #player {
-    background-image: var(--robot-up);
+    background-image: var(--player-sprite);
     background-repeat: no-repeat;
     background-size: contain;
+}
+
+#lifes {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#lifes > div {
+    background-image: var(--player-original-sprite);
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 30px;
+    height: 30px;
+}
+
+#game-stats {
+    visibility: var(--visibleWhileGameIsRunning);
 }

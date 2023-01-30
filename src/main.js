@@ -66,10 +66,8 @@ const audioController = new AudioController(settings);
 settings.audioController = audioController;
 if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.backgroundMusic);
 
-
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
-// add a lone
 
 // NOTE function definitions for event handlers, no direct code execution below this line
 /**
@@ -104,7 +102,6 @@ function generateInputValuesFromSettings() {
     inputSoundEffects.checked = settings.soundEffects;
     inputMusicVolume.value = 100 * settings.musicVolume;
     inputSoundEffectsVolume.value = 100 * settings.soundEffectsVolume;
-    console.log(settings)
     root.style.setProperty('--tile-size', `${settings.tileSize}px`);
 }
 
