@@ -69,7 +69,7 @@ if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.
 
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
-
+// add a lone
 
 // NOTE function definitions for event handlers, no direct code execution below this line
 /**
