@@ -108,6 +108,12 @@ class GameManager {
         this.state = new InputState(this);
         this.state.enter();
 
+        this.devControls();
+
+
+    }
+
+    devControls() {
         // resetting event listeners on the buttons to avoid multiple player characters showing on later games
         // TODO test out if this is still necessary once the actual rolling dice for input is done
         document.getElementById('game-inputs').innerHTML += '';
@@ -163,11 +169,12 @@ class GameBoard {
         this.terrain = terrain;
     }
 
-    // picks any location on the bottom row that has grass, if there is none, creates one
+    // For random maps, the game picks a random location on the bottom row that has grass
     getRandomStartingLocation() {
         return getRandomArrayElement(this.board[this.board.length-1].filter(tile => tile.terrainName === 'grass'));
     }
 
+    // For the saved maps, the game will always start on the bottom row, on the first grass tile from the right
     getDefaultStartingLocation() {
         return this.board[this.board.length-1].reduce((acc, tile) => {
             if (tile.terrainName === 'grass') return tile;
