@@ -55,6 +55,7 @@ export const GAME_DATA = {
         collision: 'collision.wav',
         explosion: 'explosion.wav',
         water: 'water.wav',
+        gameOver: 'game-over.mp3',
     },
     icons: {
         MoveOneCommand: '1-solid.svg',
