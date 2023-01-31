@@ -182,7 +182,6 @@ class GameManager {
             if (response.stateFinished) {
                 this.state = this.state.exit();
                 this.state.enter();
-                this.audioController.playClip('gameOver');
             }
 
         }
@@ -194,7 +193,7 @@ class GameManager {
         if (this.player.lifes === 0) {
             // GAME OVER MAN, GAME OVER
             this.state.exit(true);
-            this.state = new GameOverState(this.player, this.uiController, this.gameBoard);
+            this.state = new GameOverState(this.player, this.uiController, this.gameBoard, this.audioController);
             this.state.enter();
         }
     }
@@ -498,9 +497,10 @@ class ExecuteCommandQueueState extends State {
 }
 
 class GameOverState extends State {
-    constructor (player, uiController, gameBoard) {
+    constructor (player, uiController, gameBoard, audioController) {
         super(player, uiController, gameBoard);
         this.dialogName = 'enterGameOverState'
+        this.audioController = audioController;
     }
 
     enter() {
@@ -512,7 +512,9 @@ class GameOverState extends State {
      * based on a timer, only when the player clicks on a confirmation button
      */ 
     update() {
-        // Do nothing
+        super.update();
+        if (this.updateCount === 3) this.audioController.playClip('gameOver');
+        if (this.updateCount === 8) this.exit();
     }
 
     exit() {
