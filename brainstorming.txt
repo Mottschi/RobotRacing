@@ -1,0 +1,29 @@
+state return values:
+
+stateFinished: true/false
+
+indicates when it is time to move on to next step
+when true, game manager needs to call the current states exit method, which will return the next state
+game manager sets current state to that returned new state, then calls enter on that state, 
+from that point on, update will execute the new current states update method, until the next switch
+
+
+
+command results are handed up the chain to game manager
+
+damage: Number
+if damage, gamemanager needs to handle that damage
+(update lifes, check for death)
+
+continue: true/false
+
+
+continueCurrentMoveCommand:
+skip the rest of the command queue (handled by execute state!)
+
+landedOnTerrain: terrainname
+game manager needs to handle effects caused by the terrain the player landed on (even if he was already moved back a step)
+(play a sound and/or animation)
+
+
+state transitions are controlled by game manager (will decide when the game is over and call the exit function clean up current state and to get new state) - in some cases (map over, game won), game manager will override the returned state to move on to specific new state. exit() on the old state should still be called to clean up the old state

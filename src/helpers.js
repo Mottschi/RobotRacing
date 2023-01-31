@@ -23,8 +23,8 @@ export class AudioController {
         this.settings = settings;
         this.clips = {}
         this.musicTracks = {}
-        this.musicVolume = 1;
-        this.soundEffectsVolume = 1;
+        this.musicVolume = settings.musicVolume ? settings.musicVolume : 1;
+        this.soundEffectsVolume = settings.soundEffectsVolume ? settings.soundEffectsVolume : 1;
         this.soundPath = './assets/sound';
         this.musicPath = './assets/music';
     }
@@ -32,6 +32,7 @@ export class AudioController {
     addClip(name, filename) {
         if (this.clips[name]) this.removeClip(name);
         const audioElement = new Audio(`${this.soundPath}/${filename}`);
+        audioElement.volume = this.soundEffectsVolume;
         this.clips[name] = audioElement;
     }
 
@@ -50,6 +51,7 @@ export class AudioController {
     addMusic(name, filename) {
         if (this.musicTracks[name]) this.removeMusic(name);
         const audioElement = new Audio(`${this.musicPath}/${filename}`);
+        audioElement.volume = this.musicVolume;
         this.musicTracks[name] = audioElement;
     }
 
@@ -86,6 +88,7 @@ export class UIController {
         this.rows = rows;
         this.columns = columns;
         this.root = document.querySelector(':root');
+        this.dialogs = {};
     }
 
     setupNewGame(gameBoard, player) {
@@ -179,5 +182,23 @@ export class UIController {
     alignPlayerSprite(player) {
         const sprite = `../assets/images/robot/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
         this.root.style.setProperty('--player-sprite', `url('${sprite}')`);
+    }
+
+    showDevTools() {
+        this.root.style.setProperty('--dev-display', 'block');
+        console.log('enabling dev tools');
+    }
+
+    showDialog(name) {
+        if (this.dialogs[name]) this.dialogs[name].showModal();
+    }
+
+    hideDialog(name) {
+        if (this.dialogs[name]) this.dialogs[name].close();
+    }
+
+    addDialog(name, id) {
+        const dialog = document.getElementById(id);
+        this.dialogs[name] = dialog;
     }
 }

@@ -29,7 +29,6 @@ export const DEFAULT_SETTINGS = {
     columns: 10,
     tileSize: 50,
     randomMap: false,
-    players: 1,
     music: false,
     soundEffects: false,
 }
@@ -57,8 +56,15 @@ export const GAME_DATA = {
         explosion: 'explosion.wav',
         water: 'water.wav',
     },
+    dialogs: {
+        enterExecuteState: 'dlg-enter-execute-state',
+        enterInputState: 'dlg-enter-input-state',
+        enterGameOverState: 'dlg-enter-game-over-state',
+        enterMapCompleteState: 'dlg-enter-map-complete-state',
+    },
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 5,
+    showDev: true,
 }
 
 class GameManager {
@@ -67,50 +73,73 @@ class GameManager {
      * @param {Object} setup Optional setup instructions
      */
     constructor(setup) {
-        this.running = false;
+        this.intervalID = null;
         this.state = null;
 
         this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT_SETTINGS.tileSize;
         this.randomMap = setup.randomMap !== undefined ? setup.randomMap : DEFAULT_SETTINGS.randomMap;
 
         this.audioController = setup.audioController;
-        for (let clipName in GAME_DATA.soundEffects) {
-            this.audioController.addClip(clipName, GAME_DATA.soundEffects[clipName]);
-        }
-        
+       
         this.terrainOptions = GAME_DATA.terrainOptions;
-        let startingLocation;
+
         if (this.randomMap) {
             // when we load a random game board, the size depends on settings
             this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
             this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
             this.gameBoard = new RandomGameBoard(this.terrainOptions, this.rows, this.columns);
-            startingLocation = this.gameBoard.getRandomStartingLocation()
         } else {
             // when we load a default game board, the size will depend on the loaded map
             this.gameBoard = new DefaultGameBoard(this.terrainOptions);
             this.rows = this.gameBoard.rows;
             this.columns = this.gameBoard.columns;
-            startingLocation = this.gameBoard.getDefaultStartingLocation()
         }
-
-        // later on, it might be nice to add multiplayer, but for now, playercount is hardset to 1
-        this.playerCount = 1;
-        this.player = new Player('Player 1', new Location(startingLocation.row, startingLocation.column));
-
+        
         this.uiController = new UIController(this.rows, this.columns);
     }
 
+    init() {
+        for (let clipName in GAME_DATA.soundEffects) {
+            this.audioController.addClip(clipName, GAME_DATA.soundEffects[clipName]);
+        }
+
+        for (let dialogName in GAME_DATA.dialogs) {
+            this.uiController.addDialog(dialogName, GAME_DATA.dialogs[dialogName]);
+        }
+
+        const startingLocation = this.randomMap ? this.gameBoard.getRandomStartingLocation() : this.gameBoard.getDefaultStartingLocation();
+        this.player = new Player('Player 1', new Location(startingLocation.row, startingLocation.column));
+    }
+
     startGame() {
-        this.running = true;        
         this.uiController.setupNewGame(this.gameBoard, this.player);
 
-        this.state = new InputState(this);
+        this.state = new InputState(this.player, this.uiController);
         this.state.enter();
 
-        this.devControls();
+        if (GAME_DATA.showDev) {
+            this.devControls();
+            this.uiController.showDevTools();
+        }
+
+        this.intervalID = setInterval(()=>{
+            this.update();
+        }, 1000);
+    }
+
+    // GameManagers update method calls update on whatever is the current state
+    // the actions (if any) will then depend on that state
+    update() {
+        // states update methods will return nothing (undefined) if nothing was done
+        // if an action was taken, the state will return information on the action results
+        const response = this.state.update();
+        if (response) {
+            // check for and deal with all possible outcomes
+            if (response.damage) this.handleDamage(response.damage);
 
 
+
+        }
     }
 
     devControls() {
@@ -264,28 +293,40 @@ class Tile {
 /**
  * 'Abstract' class/interface (neither of which exists properly in JS unfortunately)
  *  Not to be used directly, only for inheritance purpose. All subclasses must override 
- *  the turn and enter methods with an actual implementation.
- * 
- * Because of the asynchrounus nature of JS, trying out a way for the state to be the one to 
- * call the gamemanager back once it's time to move onto next state, so we need the game manager
- * to add itself as argument to the constructor of a state
+ *  the class methods with an actual implementation (they can do nothing in them if they don't
+ *  need to, but they do need to implement them)
  */
 class State {
-    constructor (owner, player) {
-        this.owner = owner;
+    /**
+     * Abstract State
+     * @param {Player} player 
+     * @param {UIController} uiController
+     * @param {GameBoard, gameBoard}
+     */
+    constructor (player, uiController, gameBoard) {
         this.player = player;
-    }
+        this.uiController = uiController;
+        this.gameBoard = gameBoard;
 
-    enter () {
-        throw Error('Each subclass of State must implement the enter method themselves!');
+        this.updateCount = 0;
+        this.dialogName = '';
     }
 
     /**
-     * Not all classes will need a next step option. If a state needs it, make sure to implement it.
-     * If a state does not need it, the default will be to simply exit the current state when nextStep is called.
+     * Base functionality when entering a new state is to introduce the state via
+     * that states dialog.
      */
-    nextStep() {
-        this.exit();
+    enter () {
+        this.uiController.showDialog(this.dialogName);
+    }
+
+    /**
+     * Base functionality for states update function is to increment the updateCount and hide
+     * the corresponding dialog after 3 update ticks.
+     */
+    update() {
+        this.updateCount++;
+        if (this.updateCount === 3) this.uiController.hideDialog(this.dialogName);
     }
 
     exit () {
@@ -296,69 +337,145 @@ class State {
 class InputState extends State {
     /**
      * Create a new input state.
-     * @param {GameManager} owner 
      * @param {Player} player 
+     * @param {UIController} uiController
+     * @param {GameBoard} gameBoard
      */
-    constructor(owner, player) {
-        super(owner, player);
+    constructor(player, uiController, gameBoard) {
+        super(player, uiController, gameBoard);
         this.commandQueue = [];
+        this.dialogName = 'enterInputState';
     }
     enter () {
         // When entering input state, we have to:
+        // 1. show user we are entering input state - the dialog will be hidden after 3 update tickets
+        super.enter();
 
-        // 0. (show user we are entering input state)
-
-
-        // 1. roll the players dice
-
-
-        // 2. display dice results
+        // 2. roll the players dice
 
 
-        // 3. set up the event handlers so that player can pick order of execution for his commands
+        // 3. display dice results
 
 
-        // 4. set up event handler that will allow player to confirm his moves after order is picked. 
+        // 4. set up the event handlers so that player can pick order of execution for his commands
+
+
+        // 5. set up event handler that will allow player to confirm his moves after order is picked. 
         //    this will then call the states exit() method
     }
 
+    update() {
+        super.update();
+    }
+
     exit () {
-        this.owner.state = new ExecuteCommandQueueState(this.owner, this.player, this.commandQueue);
-        this.owner.onStateChange();
+        return new ExecuteCommandQueueState(this.player, this.uiController, this.gameBoard, this.commandQueue);
     }
 }
 
 class ExecuteCommandQueueState extends State {
     /**
      * Create a new state to execute all commands of a command queue
-     * @param {GameManager} owner 
      * @param {Player} player 
+     * @param {UIController} uiController
+     * @param {gameBoard} gameBoard
      * @param {Array} commandQueue 
      */
-    constructor(owner, player, commandQueue) {
-        super(owner, player);
-        this.commandQueue = commandQueue;
+    constructor(player, uiController, gameBoard, commandQueue) {
+        super(player, uiController, gameBoard);
+        this.commandQueue = commandQueue.map(command => new command(player, gameBoard));
         this.currentCommand = 0;
+        this.dialogName = 'enterExecuteState';
+        this.startLocation = structuredClone(player.location);
     }
 
+    // When entering input state, we have to:
+    // 1. Show the enter state dialog for 3 update calls
     enter () {
-        // on entering this state, we
-        // 1. start working off the commands one by one
-        // 2. check after each command whether the player is still alive and has not found the flag
-        // 3. once either all commands are over or game is over, call the states exit method
+        super.enter();
+    }
+
+    // The remaining execution steps are handled in update:
+    // 2. start working off the commands one by one, returning the return value of the command to game manager
+    update() {
+        super.update();
+        if (this.updateCount > 3) {
+            // each update tick after intro is closed, execute one command until we reach end of command queue
+            const command = this.commandQueue[this.currentCommand++];
+            
+            // once commands run out (command is undefined), we need to let the game manager know it's time to move on
+            if (!command) {
+                return {stateFinished: true};
+            }
+
+            const result = command.execute();
+
+            // state manager needs to check the result to see if we should continue with our command queue or 
+            // whether the current turn has come to an early stop. If we are told to skip further commands, we 
+            // simply clear the command queue, that way, on the next update, the state won't find any more 
+            // commands and move on
+            if (result.skipFurtherCommands) {
+                this.commandQueue = [];
+            }
+
+            return result;
+        }  
     }
 
     executeCommand() {
         const command = this.commandQueue[this.currentCommand++];
-        command.execute()
-
+        command.execute();
     }
 
     exit () {
-        this.owner.state = new InputState(this.owner, this.player);
-        this.owner.onStateChange();
+        return new InputState(this.owner, this.player, this.gameBoard);
     }
 }
+
+class GameOverState extends State {
+    constructor (player, uiController, gameBoard) {
+        super(player, uiController, gameBoard);
+        this.dialogName = 'enterGameOverState'
+    }
+
+    enter() {
+        super.enter();
+    }
+
+    /**
+     * When the game is over, we do NOT want to remove the game over dialog
+     * based on a timer, only when the player clicks on a confirmation button
+     */ 
+    update() {
+        // Do nothing
+    }
+
+    exit() {
+        // Return to title screen 
+        // for now, doing it the the easy way (reload page) - should be improved later on, to avoid settings resetting
+        // (alternatively settings could be stored in local storage/cookies to make them continue working after restart)
+        location.reload();
+    }
+}
+
+class MapCompletedState extends State {
+    constructor (player, uiController, gameBoard) {
+        super(player, uiController, gameBoard);
+        this.dialogName = 'enterMapCompleteState'
+    }
+
+    update() {
+        super.update();
+        // This state will automatically end after a couple of seconds
+        // (just shows the dialog and then moves on);
+        if (this.updateCount > 3) return {stateFinished: true};
+    }
+
+    exit() {
+        
+    }
+}
+
 
 /**
  * Basically a 2d Vector datastructure, but for clarity the values are called 
@@ -445,7 +562,10 @@ class MoveCommand extends Command {
     }
 
     /**
-     * Used to revert the last step from within a move command
+     * Used to revert the last step from within a move command, if we hit a tile we cannot
+     * be on. As player will always be coming from a legal tile (otherwise, he would have been
+     * moved back previously), we do not need to check whether the landing tile from this step
+     * back is a legal spot for the player.
      */
     stepBack() {
         switch (this.player.facingDirection) {
@@ -464,7 +584,7 @@ class MoveCommand extends Command {
         }
     }
 
-    oneStep() {
+    stepForward() {
         // check for map boundaries before adjuisting location
         // hitting boundaries does not cause damage or interrupt execution of further commands
         switch (this.player.facingDirection) {
@@ -485,7 +605,7 @@ class MoveCommand extends Command {
         // Prepare the result to return, then check the terrain we landed on and act accordingly
         let commandResult = {
             damage: 0, 
-            continue: true,
+            skipFurtherCommands: false,
             continueCurrentMoveCommand: false,
             landedOnTerrain: this.gameBoard.board[this.player.location.row][this.player.location.column].terrainName
         }
@@ -496,7 +616,7 @@ class MoveCommand extends Command {
                 break;
             case 'lava':
                 commandResult.damage = 99;
-                commandResult.continue = false;
+                commandResult.skipFurtherCommands = true;
                 break;
             case 'rock':
                 commandResult.damage = 1;
@@ -504,7 +624,7 @@ class MoveCommand extends Command {
                 break;
             case 'water':
                 commandResult.damage = 1;
-                commandResult.continue = false;
+                commandResult.skipFurtherCommands = true;
                 this.stepBack();
                 break;
         }
@@ -523,7 +643,7 @@ class MoveCommand extends Command {
  */
 class MoveOneCommand extends MoveCommand {
     execute() {
-        return this.oneStep();
+        return this.stepForward();
     }
 }
 
@@ -539,7 +659,7 @@ class MoveTwoCommand extends MoveCommand {
     execute() {
         let commandResult;
         for (let i = 0; i < 2; i++) {
-            commandResult = this.oneStep();
+            commandResult = this.stepForward();
             if (!commandResult.continueCurrentMoveCommand) return commandResult;
         }
         return commandResult;
@@ -559,7 +679,7 @@ class MoveThreeCommand extends MoveCommand {
     execute() {
         let commandResult;
         for (let i = 0; i < 3; i++) {
-            commandResult = this.oneStep();
+            commandResult = this.stepForward();
             if (!commandResult.continueCurrentMoveCommand) return commandResult;
         }
         return commandResult;

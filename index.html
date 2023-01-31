@@ -28,9 +28,8 @@
         <div id="game-input-container">
             <div>
                 <button id="btn-start-game">Start Game</button>
-                <button id="btn-spawn-robot">Spawn Robot</button>
             </div>
-            <div id="game-inputs">
+            <div id="game-inputs" class="dev">
                 <button id="btn-move-1">Move 1</button>
                 <button id="btn-move-2">Move 2</button>
                 <button id="btn-move-3">Move 3</button>
@@ -38,7 +37,7 @@
                 <button id="btn-turn-right">Turn Right</button>
             </div>
 
-            <div id="dev-options">
+            <div id="dev-options" class="dev">
                 <button id="btn-export-map">[DEV]: Export map</button>
                 <button id="btn-level-editor">[DEV]: Open Level Editor</button>
             </div>
@@ -100,12 +99,20 @@
             </div>
         </dialog>
     
-        <dialog id="dlg-map-complete">
-    
+        <dialog id="dlg-enter-map-complete-state">
+            <p>Map Complete</p>
         </dialog>
     
-        <dialog id="dlg-game-over">
-            
+        <dialog id="dlg-enter-game-over-state">
+            <p>Game over man, game over!</p>
+        </dialog>
+
+        <dialog id="dlg-enter-input-state">
+            <p>Please enter your commands.</p>
+        </dialog>
+
+        <dialog id="dlg-enter-execute-state">
+            <p>Executing your commands. Please stand by.</p>
         </dialog>
 
     </section>

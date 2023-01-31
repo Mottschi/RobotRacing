@@ -57,14 +57,15 @@ const settings = {
     randomMap: DEFAULT_SETTINGS.randomMap,
     music: DEFAULT_SETTINGS.music,
     soundEffects: DEFAULT_SETTINGS.soundEffects,
-    musicVolume: 1,
+    musicVolume: 0.5,
     soundEffectsVolume: 1,
 }
 
-// setting up AudioController for sound effects
+// setting up AudioController for sound effects and music
 const audioController = new AudioController(settings);
 settings.audioController = audioController;
 if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.backgroundMusic);
+
 
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
@@ -74,7 +75,9 @@ generateInputValuesFromSettings();
  * Generate a new map and start the game based on current settings.
  */
 function startGame() {
+    // start playing backgroundmusic, if setting is enabled
     const gm = new GameManager(settings);
+    gm.init();
     currentBoard = gm.startGame();
 }
 
