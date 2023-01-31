@@ -105,55 +105,55 @@ class GameManager {
         this.running = true;        
         this.uiController.setupNewGame(this.gameBoard, this.player);
 
-        this.state = new InputState(caller);
-        this.state.exit();
+        this.state = new InputState(this);
+        this.state.enter();
 
-        // // resetting event listeners on the buttons to avoid multiple player characters showing on later games
-        // // TODO test out if this is still necessary once the actual rolling dice for input is done
-        // document.getElementById('game-inputs').innerHTML += '';
+        // resetting event listeners on the buttons to avoid multiple player characters showing on later games
+        // TODO test out if this is still necessary once the actual rolling dice for input is done
+        document.getElementById('game-inputs').innerHTML += '';
 
-        // // NOTE temp dev code
-        // const btnLeft = document.querySelector('#btn-turn-left');
-        // const btnRight = document.querySelector('#btn-turn-right');
-        // const btnMove1 = document.querySelector('#btn-move-1');
-        // const btnMove2 = document.querySelector('#btn-move-2');
-        // const btnMove3 = document.querySelector('#btn-move-3');
+        // NOTE temp dev code
+        const btnLeft = document.querySelector('#btn-turn-left');
+        const btnRight = document.querySelector('#btn-turn-right');
+        const btnMove1 = document.querySelector('#btn-move-1');
+        const btnMove2 = document.querySelector('#btn-move-2');
+        const btnMove3 = document.querySelector('#btn-move-3');
 
-        // btnLeft.addEventListener('click', ()=>{
-        //     const command = new TurnLeftCommand(this.player, this.gameBoard);
-        //     command.execute();
-        //     this.uiController.alignPlayerSprite(this.player);
-        // })
+        btnLeft.addEventListener('click', ()=>{
+            const command = new TurnLeftCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.alignPlayerSprite(this.player);
+        })
 
-        // btnRight.addEventListener('click', ()=>{
-        //     const command = new TurnRightCommand(this.player, this.gameBoard);
-        //     command.execute();
-        //     this.uiController.alignPlayerSprite(this.player);
-        // })
+        btnRight.addEventListener('click', ()=>{
+            const command = new TurnRightCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.alignPlayerSprite(this.player);
+        })
 
-        // btnMove1.addEventListener('click', ()=>{
-        //     const originalPosition = {...this.player.location};
-        //     const command = new MoveOneCommand(this.player, this.gameBoard);
-        //     command.execute();
-        //     this.uiController.movePlayerSprite(this.player, originalPosition);
-        // })
+        btnMove1.addEventListener('click', ()=>{
+            const originalPosition = {...this.player.location};
+            const command = new MoveOneCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        })
 
-        // btnMove2.addEventListener('click', ()=>{
-        //     const originalPosition = {...this.player.location};
-        //     const command = new MoveTwoCommand(this.player, this.gameBoard);
-        //     command.execute();
-        //     this.uiController.movePlayerSprite(this.player, originalPosition);
-        // })
+        btnMove2.addEventListener('click', ()=>{
+            const originalPosition = {...this.player.location};
+            const command = new MoveTwoCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        })
 
-        // btnMove3.removeEventListener('click', m3);
-        // btnMove3.addEventListener('click', m3.bind(this))
+        btnMove3.removeEventListener('click', m3);
+        btnMove3.addEventListener('click', m3.bind(this))
 
-        // function m3() {
-        //     const originalPosition = {...this.player.location};
-        //     const command = new MoveThreeCommand(this.player, this.gameBoard);
-        //     command.execute();
-        //     this.uiController.movePlayerSprite(this.player, originalPosition);
-        // }
+        function m3() {
+            const originalPosition = {...this.player.location};
+            const command = new MoveThreeCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        }
     }
 }
 
@@ -182,10 +182,10 @@ class DefaultGameBoard extends GameBoard {
 
         let savedMap
         savedMap = easyMap;
-        // savedMap = mediumMap;
+        savedMap = mediumMap;
         // savedMap = hardMap;
         // savedMap = mountainMap;
-        savedMap = startinglocationtest;
+        // savedMap = startinglocationtest;
 
         this.rows = savedMap.length;
         this.columns = savedMap[0].length;
@@ -271,6 +271,14 @@ class State {
 
     enter () {
         throw Error('Each subclass of State must implement the enter method themselves!');
+    }
+
+    /**
+     * Not all classes will need a next step option. If a state needs it, make sure to implement it.
+     * If a state does not need it, the default will be to simply exit the current state when nextStep is called.
+     */
+    nextStep() {
+        this.exit();
     }
 
     exit () {
