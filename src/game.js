@@ -56,6 +56,7 @@ export const GAME_DATA = {
         explosion: 'explosion.wav',
         water: 'water.wav',
         gameOver: 'game-over.mp3',
+        dice: 'dice.mp3',
     },
     icons: {
         MoveOneCommand: '1-solid.svg',
@@ -74,6 +75,7 @@ export const GAME_DATA = {
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 3,
     showDev: false,
+    diceAmount: 5,
 }
 
 class GameManager {
@@ -128,7 +130,7 @@ class GameManager {
     startGame() {
         this.uiController.setupNewGame(this.gameBoard, this.player);
 
-        this.state = new InputState(this.player, this.uiController, this.gameBoard);
+        this.state = new InputState(this.player, this.uiController, this.gameBoard, this.audioController);
         this.state.enter();
 
         if (GAME_DATA.showDev) {
@@ -282,7 +284,7 @@ class DefaultGameBoard extends GameBoard {
 
         let savedMap
         savedMap = easyMap;
-        savedMap = mediumMap;
+        // savedMap = mediumMap;
         // savedMap = hardMap;
         // savedMap = mountainMap;
         // savedMap = startinglocationtest;
@@ -365,12 +367,14 @@ class State {
      * Abstract State
      * @param {Player} player 
      * @param {UIController} uiController
-     * @param {GameBoard, gameBoard}
+     * @param {GameBoard} gameBoard
+     * @param {AudioController} audioController
      */
-    constructor (player, uiController, gameBoard) {
+    constructor (player, uiController, gameBoard, audioController) {
         this.player = player;
         this.uiController = uiController;
         this.gameBoard = gameBoard;
+        this.audioController = audioController;
 
         this.updateCount = 0;
         this.dialogName = '';        
@@ -381,7 +385,6 @@ class State {
      * that states dialog.
      */
     enter () {
-        console.log(this)
         this.uiController.showDialog(this.dialogName);
     }
 
@@ -405,9 +408,10 @@ class InputState extends State {
      * @param {Player} player 
      * @param {UIController} uiController
      * @param {GameBoard} gameBoard
+     * @param {AudioController} audioController
      */
-    constructor(player, uiController, gameBoard) {
-        super(player, uiController, gameBoard);
+    constructor (player, uiController, gameBoard, audioController) {
+        super(player, uiController, gameBoard, audioController);
         this.commandQueue = [];
         this.dialogName = 'enterInputState';
     }
@@ -418,6 +422,7 @@ class InputState extends State {
 
         // 2. roll the players dice
         const commandOptions = this.player.rollDice();
+        this.audioController.playClip('dice');
 
         // 3. display dice results
         this.uiController.showDiceResults(commandOptions, this.chooseCommand.bind(this));
@@ -440,7 +445,7 @@ class InputState extends State {
     }
 
     exit () {
-        return new ExecuteCommandQueueState(this.player, this.uiController, this.gameBoard, this.commandQueue);
+        return new ExecuteCommandQueueState(this.player, this.uiController, this.gameBoard, this.audioController, this.commandQueue);
     }
 }
 
@@ -450,12 +455,12 @@ class ExecuteCommandQueueState extends State {
      * @param {Player} player 
      * @param {UIController} uiController
      * @param {gameBoard} gameBoard
+     * @param {AudioController} audioController
      * @param {Array} commandQueue 
      */
-    constructor(player, uiController, gameBoard, commandQueue) {
-        super(player, uiController, gameBoard);
+    constructor(player, uiController, gameBoard, audioController, commandQueue) {
+        super(player, uiController, gameBoard, audioController);
         this.commandQueue = commandQueue.map(command => new command(player, gameBoard));
-        this.currentCommand = 0;
         this.dialogName = 'enterExecuteState';
         this.startLocation = structuredClone(player.location);
     }
@@ -485,22 +490,19 @@ class ExecuteCommandQueueState extends State {
             if (result.landedOnTerrain === 'water') this.commandQueue = [new ReturnToOriginCommand(this.player, this.gameBoard)];
             else if (result.landedOnTerrain === 'lava') this.commandQueue = [];
 
-            console.log(`move done, landed on ${result.landedOnTerrain}. remaining commands:`, this.commandQueue)
-
             return result;
         }  
     }
 
     exit () {
-        return new InputState(this.player, this.uiController, this.gameBoard);
+        return new InputState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
 
 class GameOverState extends State {
     constructor (player, uiController, gameBoard, audioController) {
-        super(player, uiController, gameBoard);
+        super(player, uiController, gameBoard, audioController);
         this.dialogName = 'enterGameOverState'
-        this.audioController = audioController;
     }
 
     enter() {
@@ -565,7 +567,10 @@ class Player {
         // for now, we only have one type of die so this could be simplified
         // but one of the addon ideas for the game is to variants, so we keep that option
         // open right now
-        this.dice = [new Die(), new Die(), new Die()];
+        this.dice = []
+        for (let i = 0; i < GAME_DATA.diceAmount; i++) {
+            this.dice.push(new Die());
+        }
 
         // for now, players always start facing upwards, could be changed later
         this.facingDirection = 0;

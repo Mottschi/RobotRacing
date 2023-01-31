@@ -141,6 +141,6 @@ solution (could hide/show via JS instead?) */
 }
 
 #game-dice-results .chosen {
-    background-color: red;
+    background-color: orange;
     pointer-events: none;
 }
