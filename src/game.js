@@ -520,10 +520,7 @@ class GameOverState extends State {
     }
 
     exit() {
-        // Return to title screen 
-        // for now, doing it the the easy way (reload page) - should be improved later on, to avoid settings resetting
-        // (alternatively settings could be stored in local storage/cookies to make them continue working after restart)
-        location.reload();
+        this.uiController.stopGame();
     }
 }
 
