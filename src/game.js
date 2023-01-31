@@ -56,6 +56,14 @@ export const GAME_DATA = {
         explosion: 'explosion.wav',
         water: 'water.wav',
     },
+    icons: {
+        MoveOneCommand: '1-solid.svg',
+        MoveTwoCommand: '2-solid.svg',
+        MoveThreeCommand: '3-solid.svg',
+        TurnLeftCommand: 'arrow-rotate-left-solid.svg',
+        TurnRightCommand: 'arrow-rotate-right-solid.svg',
+        MoveBackwardsCommand: 'arrow-down-long-solid.svg',
+    },
     dialogs: {
         enterExecuteState: 'dlg-enter-execute-state',
         enterInputState: 'dlg-enter-input-state',
@@ -63,8 +71,8 @@ export const GAME_DATA = {
         enterMapCompleteState: 'dlg-enter-map-complete-state',
     },
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
-    startingLife: 5,
-    showDev: true,
+    startingLife: 3,
+    showDev: false,
 }
 
 class GameManager {
@@ -99,12 +107,17 @@ class GameManager {
     }
 
     init() {
+        // setting up assets (audio clips, dialogs, icons)
         for (let clipName in GAME_DATA.soundEffects) {
             this.audioController.addClip(clipName, GAME_DATA.soundEffects[clipName]);
         }
 
         for (let dialogName in GAME_DATA.dialogs) {
             this.uiController.addDialog(dialogName, GAME_DATA.dialogs[dialogName]);
+        }
+
+        for (let iconName in GAME_DATA.icons) {
+            this.uiController.addIcon(iconName, GAME_DATA.icons[iconName]);
         }
 
         const startingLocation = this.randomMap ? this.gameBoard.getRandomStartingLocation() : this.gameBoard.getDefaultStartingLocation();
@@ -114,7 +127,7 @@ class GameManager {
     startGame() {
         this.uiController.setupNewGame(this.gameBoard, this.player);
 
-        this.state = new InputState(this.player, this.uiController);
+        this.state = new InputState(this.player, this.uiController, this.gameBoard);
         this.state.enter();
 
         if (GAME_DATA.showDev) {
@@ -135,10 +148,53 @@ class GameManager {
         const response = this.state.update();
         if (response) {
             // check for and deal with all possible outcomes
-            if (response.damage) this.handleDamage(response.damage);
+            if (response.landedOnTerrain) {
+                switch (response.landedOnTerrain) {
+                    case 'grass': 
+                        this.audioController.playClip('acknowledged');
+                        break;
+                    case 'water': 
+                        this.audioController.playClip('water');
+                        break;
+                    case 'rock':
+                        this.audioController.playClip('explosion');
+                        break;
+                    case 'lava': 
+                        this.audioController.playClip('explosion');
+                        break;
+                    case 'reset':
+                        // TODO reset happens on a special move executed after hitting water
+                        // damage is already done, but might want a special sound effect 
+                        // for the reset to play here
+                        break;
+                }
 
+                this.uiController.movePlayerSprite(this.player);
+                this.uiController.alignPlayerSprite(this.player);
+            }
 
+            if (response.damage) {
+                this.handleDamage(response.damage);
+            }
 
+            // check if it is time to move on to the next state
+            if (response.stateFinished) {
+                this.state = this.state.exit();
+                this.state.enter();
+                this.audioController.playClip('gameOver');
+            }
+
+        }
+    }
+
+    handleDamage(damage) {
+        this.player.lifes = Math.max(0, this.player.lifes - damage);
+        this.uiController.updatePlayerLifes(this.player);
+        if (this.player.lifes === 0) {
+            // GAME OVER MAN, GAME OVER
+            this.state.exit(true);
+            this.state = new GameOverState(this.player, this.uiController, this.gameBoard);
+            this.state.enter();
         }
     }
 
@@ -317,7 +373,7 @@ class State {
         this.gameBoard = gameBoard;
 
         this.updateCount = 0;
-        this.dialogName = '';
+        this.dialogName = '';        
     }
 
     /**
@@ -325,6 +381,7 @@ class State {
      * that states dialog.
      */
     enter () {
+        console.log(this)
         this.uiController.showDialog(this.dialogName);
     }
 
@@ -363,8 +420,7 @@ class InputState extends State {
         const commandOptions = this.player.rollDice();
 
         // 3. display dice results
-        console.log('rolled the dice for this turn, these are the options:', commandOptions);
-
+        this.uiController.showDiceResults(commandOptions, this.chooseCommand.bind(this));
 
         // 4. set up the event handlers so that player can pick order of execution for his commands
 
@@ -373,8 +429,14 @@ class InputState extends State {
         //    this will then call the states exit() method
     }
 
+    chooseCommand(index, command) {
+        this.commandQueue.push(command);
+        this.uiController.updateChosenDiceResults(this.commandQueue);
+    }
+
     update() {
         super.update();
+        if (this.commandQueue.length === 3) return {stateFinished: true};
     }
 
     exit () {
@@ -402,6 +464,7 @@ class ExecuteCommandQueueState extends State {
     // 1. Show the enter state dialog for 3 update calls
     enter () {
         super.enter();
+        this.player.turnStartLocation = structuredClone(this.player.location);
     }
 
     // The remaining execution steps are handled in update:
@@ -410,7 +473,7 @@ class ExecuteCommandQueueState extends State {
         super.update();
         if (this.updateCount > 3) {
             // each update tick after intro is closed, execute one command until we reach end of command queue
-            const command = this.commandQueue[this.currentCommand++];
+            const command = this.commandQueue.shift();
             
             // once commands run out (command is undefined), we need to let the game manager know it's time to move on
             if (!command) {
@@ -419,25 +482,17 @@ class ExecuteCommandQueueState extends State {
 
             const result = command.execute();
 
-            // state manager needs to check the result to see if we should continue with our command queue or 
-            // whether the current turn has come to an early stop. If we are told to skip further commands, we 
-            // simply clear the command queue, that way, on the next update, the state won't find any more 
-            // commands and move on
-            if (result.skipFurtherCommands) {
-                this.commandQueue = [];
-            }
+            if (result.landedOnTerrain === 'water') this.commandQueue = [new ReturnToOriginCommand(this.player, this.gameBoard)];
+            else if (result.landedOnTerrain === 'lava') this.commandQueue = [];
+
+            console.log(`move done, landed on ${result.landedOnTerrain}. remaining commands:`, this.commandQueue)
 
             return result;
         }  
     }
 
-    executeCommand() {
-        const command = this.commandQueue[this.currentCommand++];
-        command.execute();
-    }
-
     exit () {
-        return new InputState(this.owner, this.player, this.gameBoard);
+        return new InputState(this.player, this.uiController, this.gameBoard);
     }
 }
 
@@ -553,8 +608,11 @@ class Die {
  *              when hitting water)
  */
 class Command {
-    constructor(player) {
+    static sprite = '';
+
+    constructor(player, gameBoard) {
         this.player = player;
+        this.gameBoard = gameBoard;
     }
 
     execute() {
@@ -572,8 +630,7 @@ class Command {
  */
 class MoveCommand extends Command {
     constructor(player, gameBoard) {
-        super(player);
-        this.gameBoard = gameBoard;
+        super(player, gameBoard);
         this.rows = gameBoard.rows;
         this.columns = gameBoard.columns;
     }
@@ -622,7 +679,6 @@ class MoveCommand extends Command {
         // Prepare the result to return, then check the terrain we landed on and act accordingly
         let commandResult = {
             damage: 0, 
-            skipFurtherCommands: false,
             continueCurrentMoveCommand: false,
             landedOnTerrain: this.gameBoard.board[this.player.location.row][this.player.location.column].terrainName
         }
@@ -633,7 +689,6 @@ class MoveCommand extends Command {
                 break;
             case 'lava':
                 commandResult.damage = 99;
-                commandResult.skipFurtherCommands = true;
                 break;
             case 'rock':
                 commandResult.damage = 1;
@@ -641,8 +696,6 @@ class MoveCommand extends Command {
                 break;
             case 'water':
                 commandResult.damage = 1;
-                commandResult.skipFurtherCommands = true;
-                this.stepBack();
                 break;
         }
 
@@ -703,6 +756,16 @@ class MoveThreeCommand extends MoveCommand {
     }  
 }
 
+class ReturnToOriginCommand extends MoveCommand {
+    execute() {
+        this.player.location = this.player.turnStartLocation;
+        return {
+            damage: 0, 
+            landedOnTerrain: 'reset',
+        }
+    }
+}
+
 /**
  * Executing a TurnLeftCommand adjusts the direction the player is facing 90 degrees left
  * 
@@ -717,7 +780,10 @@ class TurnLeftCommand extends Command {
         // As in JS, modulo of a negative number returns a negative value, 
         // we cannot use the modulo to access the corrected index here, have to check directly for negative value
         if (this.player.facingDirection < 0) this.player.facingDirection += 4;
-        return {damage: 0, continue: true};
+        return {
+            damage: 0,
+            landedOnTerrain: this.gameBoard.board[this.player.location.row][this.player.location.column].terrainName,
+        };
     }
 }
 
@@ -732,7 +798,10 @@ class TurnLeftCommand extends Command {
 class TurnRightCommand extends Command {
     execute() {
         this.player.facingDirection = (this.player.facingDirection + 1) % 4;
-        return {damage: 0, continue: true};
+        return {
+            damage: 0, 
+            landedOnTerrain: this.gameBoard.board[this.player.location.row][this.player.location.column].terrainName,
+        };
     }
 }
 

@@ -29,9 +29,13 @@
     /* height: calc(var(--rows) * var(--tile-size)); */
     height: 100vh;
     display: flex;
-    justify-content: center;
+    
     align-items: center;
     flex-direction: column;
+}
+
+#game-inputs {
+    visibility: var(--visibleWhileGameIsRunning);
 }
 
 #game-input-container > div {
@@ -107,4 +111,36 @@ solution (could hide/show via JS instead?) */
 
 .dev {
     display: var(--dev-display);
+}
+
+#game-dice-results, #game-dice-chosen {
+    display: flex;
+    flex-direction: row;
+    justify-items: center;
+    align-items: center;
+}
+
+.icon {
+    width: calc(2 * var(--tile-size));
+    aspect-ratio: 1;
+    margin: 1rem;
+    text-align: center;
+    display: flex;
+    justify-items: center;
+    border: 0.5px solid black;
+    border-radius: 5px;
+}
+
+.icon > img {
+    
+    width: 100%;
+}
+
+#game-dice-results div:not(.chosen), #game-dice-chosen .chosen {
+    background-color: green;
+}
+
+#game-dice-results .chosen {
+    background-color: red;
+    pointer-events: none;
 }

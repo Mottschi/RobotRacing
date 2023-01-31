@@ -1,3 +1,15 @@
+(all the options can also be undefined, as they would also be defined during execution state)
+
+result = {
+	stateFinished: true/false,
+	damage: Number,
+	landedOnTerrain: string(terrainName),
+	skipFurtherMoves: true/false (handled by state),
+	
+	
+
+TODO:
+
 state return values:
 
 stateFinished: true/false
@@ -9,21 +21,32 @@ from that point on, update will execute the new current states update method, un
 
 
 
-command results are handed up the chain to game manager
+command results are handed up the chain to game manager, but may be handled on all steps on their way (command, state, game manager)
 
 damage: Number
 if damage, gamemanager needs to handle that damage
 (update lifes, check for death)
 
-continue: true/false
-
-
-continueCurrentMoveCommand:
-skip the rest of the command queue (handled by execute state!)
 
 landedOnTerrain: terrainname
 game manager needs to handle effects caused by the terrain the player landed on (even if he was already moved back a step)
 (play a sound and/or animation)
 
-
 state transitions are controlled by game manager (will decide when the game is over and call the exit function clean up current state and to get new state) - in some cases (map over, game won), game manager will override the returned state to move on to specific new state. exit() on the old state should still be called to clean up the old state
+
+
+
+TO CONSIDER:
+who should be responsible for moving a player back from illegal location:
+/ game manager?
+/ command?
+/ state?
+
+
+
+IMPLEMENTED:
+skipFurtherCommands: true/false
+if true, skip the rest of the command queue (handled by execute state!)
+
+continueCurrentMoveCommand:
+this is used by the command itself, not of interest to state/game manager!

@@ -88,6 +88,7 @@ export class UIController {
         this.columns = columns;
         this.root = document.querySelector(':root');
         this.dialogs = {};
+        this.icons = {};
     }
 
     setupNewGame(gameBoard, player) {
@@ -131,9 +132,6 @@ export class UIController {
 
     drawBoard(gameBoard) {
         if (document.querySelectorAll('#game-board-container > .grid-row > .tile').length !== this.columns * this.rows) {
-            // console.log('error')
-            // console.log(this.columns, this.rows, document.querySelectorAll('#game-board-container > .grid-row > .tile').length);
-            // console.log(gameBoard)
             throw Error('[GameBoard]: Unable to draw map on this game board');
         }
 
@@ -166,9 +164,10 @@ export class UIController {
      * Draws the player sprite at his current location.
      * @param {Player} player 
      */
-    movePlayerSprite(player, oldLocation) {
+    movePlayerSprite(player) {
         const {row, column} = player.location;
-        if (oldLocation) document.querySelector(`[row='${oldLocation.row}'][column='${oldLocation.column}'`).removeAttribute('id', 'player');
+        const oldLocation = document.getElementById('player');
+        if (oldLocation) oldLocation.removeAttribute('id', 'player');
         document.querySelector(`[row='${row}'][column='${column}'`).setAttribute('id', 'player');
     }
 
@@ -197,5 +196,57 @@ export class UIController {
     addDialog(name, id) {
         const dialog = document.getElementById(id);
         this.dialogs[name] = dialog;
+    }
+
+    addIcon(name, filename) {
+        const iconDiv = document.createElement('div');
+        iconDiv.classList.add('icon');
+        
+        const iconImg = document.createElement('img');
+        iconImg.src = `./assets/images/icons/${filename}`;
+
+        iconDiv.appendChild(iconImg);
+        this.icons[name] = iconDiv;
+    }
+
+    /**
+     * Receives an array of objects, each with a game command, and a callback function
+     * that should be executed when the generated icon is clicked
+     * @param {*} commands 
+     */
+    showDiceResults(commands, chooseCommand) {
+        // clear out the containers before adding the new dice results
+        const diceResultContainer = document.querySelector('#game-dice-results');
+        this.updateChosenDiceResults([]);
+
+        diceResultContainer.innerHTML = '';
+
+        commands.forEach((command, index) => {
+            const newIconNode = this.icons[command.name].cloneNode(true);
+            newIconNode.addEventListener('click', ()=>{
+                chooseCommand(index, command);
+                newIconNode.classList.add('chosen');
+            })
+            diceResultContainer.appendChild(newIconNode);
+        });
+
+        
+    }
+
+    updateChosenDiceResults(commands) {
+        const diceChosenContainer = document.querySelector('#game-dice-chosen');
+        diceChosenContainer.innerHTML = '';
+
+        commands.forEach(command => {
+            const newIconNode = this.icons[command.name].cloneNode(true);
+            newIconNode.classList.add('chosen');
+            diceChosenContainer.appendChild(newIconNode);
+        })
+
+        for (let i = 0; i < 3 - commands.length; i++) {
+            const newEmptyIconNode = document.createElement('div');
+            newEmptyIconNode.classList.add('icon');
+            diceChosenContainer.appendChild(newEmptyIconNode);
+        }
     }
 }
