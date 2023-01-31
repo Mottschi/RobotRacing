@@ -45,7 +45,6 @@ export class AudioController {
             this.clips[name].play();
             this.clips[name].volume = this.soundEffectsVolume;
         }
-        console.log(this.clips[name].volume)
     }
 
     addMusic(name, filename) {
@@ -103,7 +102,6 @@ export class UIController {
     }
 
     generateGrid() {
-        console.log('generating grid')
         const boardContainer = document.getElementById('game-board-container');
 
         // setting up the CSS variables to adjust the grid to the rows, columns 
@@ -133,9 +131,9 @@ export class UIController {
 
     drawBoard(gameBoard) {
         if (document.querySelectorAll('#game-board-container > .grid-row > .tile').length !== this.columns * this.rows) {
-            console.log('error')
-            console.log(this.columns, this.rows, document.querySelectorAll('#game-board-container > .grid-row > .tile').length);
-            console.log(gameBoard)
+            // console.log('error')
+            // console.log(this.columns, this.rows, document.querySelectorAll('#game-board-container > .grid-row > .tile').length);
+            // console.log(gameBoard)
             throw Error('[GameBoard]: Unable to draw map on this game board');
         }
 
@@ -186,7 +184,6 @@ export class UIController {
 
     showDevTools() {
         this.root.style.setProperty('--dev-display', 'block');
-        console.log('enabling dev tools');
     }
 
     showDialog(name) {

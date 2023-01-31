@@ -153,6 +153,7 @@ class GameManager {
         const btnMove1 = document.querySelector('#btn-move-1');
         const btnMove2 = document.querySelector('#btn-move-2');
         const btnMove3 = document.querySelector('#btn-move-3');
+        const btnMoveBack = document.querySelector('#btn-move-backwards');
 
         btnLeft.addEventListener('click', ()=>{
             const command = new TurnLeftCommand(this.player, this.gameBoard);
@@ -189,6 +190,13 @@ class GameManager {
             command.execute();
             this.uiController.movePlayerSprite(this.player, originalPosition);
         }
+
+        btnMoveBack.addEventListener('click', ()=> {
+            const originalPosition = {...this.player.location};
+            const command = new MoveBackwardsCommand(this.player, this.gameBoard);
+            command.execute();
+            this.uiController.movePlayerSprite(this.player, originalPosition);
+        })
     }
 }
 
@@ -352,9 +360,10 @@ class InputState extends State {
         super.enter();
 
         // 2. roll the players dice
-
+        const commandOptions = this.player.rollDice();
 
         // 3. display dice results
+        console.log('rolled the dice for this turn, these are the options:', commandOptions);
 
 
         // 4. set up the event handlers so that player can pick order of execution for his commands
@@ -490,8 +499,6 @@ class Location {
 
 class Player {
     constructor(name, location) {
-        console.log(location)
-
         this.name = name;
         this.location = location;
         this.sprite = getRandomArrayElement(GAME_DATA.playerSprites);
@@ -518,14 +525,16 @@ class Player {
  * Die that contains a number of options. Can be rolled to receive a command class (that can then be used to receive a command)
  */
 class Die {
-    constructor() {
-        this.options = [
+    constructor(options) {
+        if (options) this.options = options;
+        else this.options = [
             TurnLeftCommand,
             TurnRightCommand,
             MoveOneCommand,
             MoveTwoCommand,
             MoveThreeCommand,
-        ]
+            MoveBackwardsCommand,
+        ];
     }
 
     roll () {
@@ -553,6 +562,14 @@ class Command {
     }
 }
 
+/**
+ * 'Abstract' class/interface (neither of which exists properly in JS unfortunately)
+ *  Not to be used directly, only for inheritance purpose. 
+ * 
+ *  MoveCommand contains the logic for making one step forward, as well as reverting 
+ *  a forward step by making a step back. All subclasses must override the Commands 
+ *  execute method with an actual implementation that can then use these step methods.
+ */
 class MoveCommand extends Command {
     constructor(player, gameBoard) {
         super(player);
@@ -716,6 +733,16 @@ class TurnRightCommand extends Command {
     execute() {
         this.player.facingDirection = (this.player.facingDirection + 1) % 4;
         return {damage: 0, continue: true};
+    }
+}
+
+class MoveBackwardsCommand extends MoveCommand {
+    // to move backwards, we quickly turn around, make one step forward, then turn around again before returning
+    execute() {
+        this.player.facingDirection = (this.player.facingDirection + 2) % 4;
+        const result = this.stepForward();
+        this.player.facingDirection = (this.player.facingDirection + 2) % 4;
+        return result;
     }
 }
 
