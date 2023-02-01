@@ -88,7 +88,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.mapsCompleted = 2;
+        this.mapsCompleted = 0;
 
         this.audioController = settings.audioController;
         
