@@ -1,11 +1,11 @@
 
 /**
- * 
+ * Returns a random element of an array.
  * @param {Array} arr Array of Elements
  * @returns any random Array Element
  */
 export let getRandomArrayElement = function getRandomArrayElement(arr) {
-    return arr[Math.floor(Math.random() * arr.length)]
+    return arr[Math.floor(Math.random() * arr.length)];
 };
 
 
@@ -18,15 +18,20 @@ export let getRandomArrayElement = function getRandomArrayElement(arr) {
  * playClip will play the corresponding sound clip if and only if the current setting
  * for sound effects is enabled AND the sound effect was set up previously via addClip
  */
+// TODO Right now, the Audio Controller also works as a kind of Asset Pool, would be good to extract 
+// that to an actual AssetPool class
 export class AudioController {
     constructor(settings) {
         this.settings = settings;
-        this.clips = {}
-        this.musicTracks = {}
+        this.clips = {};
+        this.musicTracks = {};
         this.musicVolume = settings.musicVolume ? settings.musicVolume : 1;
         this.soundEffectsVolume = settings.soundEffectsVolume ? settings.soundEffectsVolume : 1;
+        
+        // These paths are used in the DOM, so use path from project root
         this.soundPath = './assets/sound';
         this.musicPath = './assets/music';
+
     }
 
     addClip(name, filename) {
@@ -89,6 +94,12 @@ export class UIController {
         this.root = document.querySelector(':root');
         this.dialogs = {};
         this.icons = {};
+
+        // This path is used in the DOM, so uses path from project root
+        this.iconPath = './assets/images/icons';
+
+        // This path is used for CSS variables, so needs to the path from CSS folder
+        this.playerImagePath = '../assets/images/robot';
     }
 
     setupNewGame(gameBoard, player) {
@@ -143,7 +154,7 @@ export class UIController {
     }
 
     initializePlayer(player) {
-        const sprite = `../assets/images/robot/${player.sprite}-up.png`
+        const sprite = `${this.playerImagePath}/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
         const root = document.querySelector(':root');
         root.style.setProperty('--player-original-sprite', `url('${sprite}')`);
         this.alignPlayerSprite(player);
@@ -177,7 +188,7 @@ export class UIController {
      * @param {Player} player 
      */
     alignPlayerSprite(player) {
-        const sprite = `../assets/images/robot/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
+        const sprite = `${this.playerImagePath}/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
         this.root.style.setProperty('--player-sprite', `url('${sprite}')`);
     }
 
@@ -203,7 +214,7 @@ export class UIController {
         iconDiv.classList.add('icon');
         
         const iconImg = document.createElement('img');
-        iconImg.src = `./assets/images/icons/${filename}`;
+        iconImg.src = `${this.iconPath}/${filename}`;
 
         iconDiv.appendChild(iconImg);
         this.icons[name] = iconDiv;

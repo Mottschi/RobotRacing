@@ -3,7 +3,7 @@
 * the GameManager constructor
 */
 
-import { getRandomArrayElement, DIRECTIONS, UIController } from "./helpers.js";
+import { getRandomArrayElement, UIController } from "./helpers.js";
 
 import easyMap from '../assets/maps/easy.js';
 import mediumMap from '../assets/maps/medium.js';
