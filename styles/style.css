@@ -70,7 +70,7 @@ html {
 }
 
 #game-board-container {
-    padding: var(--tile-size);
+    padding: 0 var(--tile-size);
     order: 1;
     display: block;    
 }
