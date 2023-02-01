@@ -2,9 +2,14 @@
 @import url('./map.css');
 
 :root {
+    --dev-display: none;
+}
+
+body {
     --background-color:#4158D0;
     --background-image: linear-gradient(43deg, #4158D0 0%, #C850C0 46%, #FFCC70 100%);
-    --dev-display: none;
+    background-repeat: no-repeat;
+    height: 100vh;
 }
 
 @font-face {
@@ -24,20 +29,16 @@
     width: calc(var(--tile-size * var(--columns)));
 }
 
-#game-input-container {
+#game-player-info {
     width: 100%;
-    height: 100vh;
+    height: 100%;
     display: flex;
     
     align-items: center;
     flex-direction: column;
 }
 
-#game-inputs {
-    visibility: var(--visibleWhileGameIsRunning);
-}
-
-#game-input-container > div {
+#game-player-info > div {
     margin: 1rem;
 }
 
@@ -59,7 +60,6 @@ body {
 
 #game-board-container {
     margin: var(--tile-size);
-    visibility: var(--visibleWhileGameIsRunning);
 }
 
 #navbar {
@@ -138,4 +138,8 @@ body {
 #game-dice-results .chosen {
     background-color: orange;
     pointer-events: none;
+}
+
+#app > .inactive {
+    display: none;
 }

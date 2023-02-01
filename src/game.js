@@ -569,7 +569,7 @@ class GameOverState extends State {
     }
 
     exit() {
-        this.uiController.handleGameOver();
+        this.uiController.displayTitleScene();
         return null;
     }
 }
@@ -629,9 +629,14 @@ class SetupState extends State {
     }
 }
 
-class GameNotRunningState extends State {
+/**
+ * The State the game is in when the game is "not running"
+ * Will display the title scene when it enters this state
+ * and hide it when it exits the state.
+ */
+class TitleSceneState extends State {
     enter(){
-
+        this.uiController.displayTitleScene();
     }
 
     update(){
@@ -639,7 +644,10 @@ class GameNotRunningState extends State {
     }
 
     exit(){
-        
+        // As we are leaving the title scene, we have to toggle display 
+        this.uiController.displayGameScene();
+
+        return new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
 

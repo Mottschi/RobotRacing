@@ -17,10 +17,9 @@ const btnLevelEditor = document.getElementById('btn-level-editor');
 
 
 // Get input elements for settings
-const inputRows = document.getElementById('input-rows');
-const inputColumns = document.getElementById('input-columns');
+// const inputRows = document.getElementById('input-rows');
+// const inputColumns = document.getElementById('input-columns');
 const inputTilesize = document.getElementById('input-tile-size');
-const inputRandomMap = document.getElementById('input-random-map');
 const inputMusic = document.getElementById('input-music');
 const inputMusicVolume = document.getElementById('input-music-volume');
 const inputSoundEffects = document.getElementById('input-sound-effects');
@@ -97,10 +96,9 @@ function showSettings() {
  * Set the values in the setting input fields to the current value from the settings variable.
  */
 function generateInputValuesFromSettings() {
-    inputRows.value = settings.rows;
-    inputColumns.value = settings.columns;
+    // inputRows.value = settings.rows;
+    // inputColumns.value = settings.columns;
     inputTilesize.value = settings.tileSize;
-    inputRandomMap.checked = settings.randomMap;
     inputMusic.checked = settings.music;
     inputSoundEffects.checked = settings.soundEffects;
     inputMusicVolume.value = 100 * settings.musicVolume;
@@ -122,17 +120,12 @@ function closeSettingsWithoutSaving() {
  */
 function saveSettings() {
     settings.tileSize = Number(inputTilesize.value);
-    settings.randomMap = inputRandomMap.checked;
     settings.music = inputMusic.checked;
     settings.soundEffects = inputSoundEffects.checked;
 
-    if (settings.randomMap) {
-        settings.rows = Number(inputRows.value);
-        settings.columns = Number(inputColumns.value);
-    } else {
-        settings.rows = DEFAULT_SETTINGS.rows;
-        settings.columns = DEFAULT_SETTINGS.columns;
-    }
+    // settings.rows = Number(inputRows.value);
+    // settings.columns = Number(inputColumns.value);
+
 
     if (settings.musicVolume !== inputMusicVolume.value / 100) {
         settings.musicVolume = inputMusicVolume.value / 100;
@@ -146,7 +139,6 @@ function saveSettings() {
 
     if (settings.music) audioController.playMusic('background');
     else if (!settings.music) audioController.pauseMusic('background');
-
 
     dlgSettings.close();
 

@@ -4,8 +4,7 @@
     --rows: 20;
     --player-sprite: none;
     --player-original-sprite: none;
-    --goal-sprite: url('../assets/images/flag2.png'); 
-    --visibleWhileGameIsRunning: hidden;
+    --goal-sprite: url('../assets/images/flag2.png');
 }
 
 /* Grid Tiles (background will be painted over with the terrain below */
@@ -66,10 +65,6 @@
     background-size: contain;
     width: 30px;
     height: 30px;
-}
-
-#game-player {
-    visibility: var(--visibleWhileGameIsRunning);
 }
 
 /* The flag (goal) sprite */

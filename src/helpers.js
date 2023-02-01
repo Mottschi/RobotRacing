@@ -134,8 +134,16 @@ export class UIController {
     /**
      * Hide all UI elements that should only be visible while a game is running.
      */
-    handleGameOver() {
-        this.root.style.setProperty('--visibleWhileGameIsRunning', 'hidden');
+    displayTitleScene() {
+        document.getElementById('title-scene').classList.remove('inactive');
+        document.getElementById('game-player-info').classList.add('inactive');
+        document.getElementById('game-board-container').classList.add('inactive');
+    }
+
+    displayGameScene() {
+        document.getElementById('title-scene').classList.add('inactive');
+        document.getElementById('game-player-info').classList.remove('inactive');
+        document.getElementById('game-board-container').classList.remove('inactive');
     }
 
     /**
