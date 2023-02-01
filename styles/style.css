@@ -72,10 +72,7 @@ html {
 #game-board-container {
     padding: var(--tile-size);
     order: 1;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    
+    display: block;    
 }
 
 nav {
@@ -182,13 +179,6 @@ nav {
     /* and make sure to put them on the left side */
     #game-player-info {
         order: 0;
-    }
-
-    /* If the screen width gets much bigger then the height (say, ultra wide screen), the 
-    grid size will be based on the height, and the grid will be drawn on the left of its
-    container, just next to the controls */
-    #game-board-container {
-        display: block;
     }
 }
 
