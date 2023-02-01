@@ -344,9 +344,9 @@ export class UIController {
     setTileSize(){
         const availableWidth = window.innerWidth - (window.innerWidth < 1200 ? 0 : 400);
         const availableHeight = window.innerHeight - document.querySelector('nav').offsetHeight
-            - (window.innerWidth < 1200 ? 320 : 0);
+            - (window.innerWidth < 1200 ? 260 : 0);
         const tileSizeWidth = availableWidth / (this.columns + 2);
-        const tileSizeHeight = availableHeight / (this.rows + 2);
+        const tileSizeHeight = availableHeight / (this.rows);
         const tileSize = Math.floor(Math.min(tileSizeHeight, tileSizeWidth));
         this.root.style.setProperty('--tile-size', `${tileSize}px`);
     }
