@@ -152,7 +152,12 @@ export class UIController {
 
         window.addEventListener('keydown', (event)=>{
             if (event.code === 'Space') callback();
-        })
+        });
+
+        // to make it work on mobile, using touchend event
+        window.addEventListener('touchend', (event)=>{
+            callback();
+        });
     }
 
     /**
