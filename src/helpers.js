@@ -133,17 +133,32 @@ export class UIController {
 
     /**
      * Hide all UI elements that should only be visible while a game is running.
+     * Changes Background to the title screen.
+     * Sets up event handler necessary to leave title screen
      */
-    displayTitleScene() {
+    displayTitleScene(callback) {
         document.getElementById('title-scene').classList.remove('inactive');
         document.getElementById('game-player-info').classList.add('inactive');
         document.getElementById('game-board-container').classList.add('inactive');
+
+        this.root.style.setProperty('--background-image', 'var(--title-scene)');
+
+        window.addEventListener('keydown', (event)=>{
+            console.log('key hit', event.code)
+            if (event.code === 'Space') callback();
+        })
     }
 
+    /**
+     * Show the UI elements necessary to play the game.
+     * Change Background to gradient
+     */
     displayGameScene() {
         document.getElementById('title-scene').classList.add('inactive');
         document.getElementById('game-player-info').classList.remove('inactive');
         document.getElementById('game-board-container').classList.remove('inactive');
+
+        this.root.style.setProperty('--background-image', 'var(--gradient)');
     }
 
     /**

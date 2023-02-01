@@ -111,6 +111,7 @@ class GameManager {
         for (let iconName in GAME_DATA.icons) {
             this.uiController.addIcon(iconName, GAME_DATA.icons[iconName]);
         }
+
         this.player = new Player('Player 1', new Location(0, 0));
         this.uiController.updateCompletedMaps(this.maps);
     }
@@ -138,10 +139,15 @@ class GameManager {
         return this.gameBoard;
     }
 
-    startGame() {
-        this.state = new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
+    startGameEngine() {
+        // start by initialiazing necessary assets
+        this.init();
+
+        // switch to the TitleSceneState
+        this.state = new TitleSceneState(this.player, this.uiController, this.gameBoard, this.audioController);
         this.state.enter();
 
+        // Start the gameloop
         this.intervalID = setInterval(()=>{
             this.update();
         }, GAME_DATA.turnTimeInMS);
@@ -189,9 +195,15 @@ class GameManager {
             // check if it is time to move on to the next state
             if (response.stateFinished) {
                 this.state = this.state.exit();
-                if (!this.state) {
-                    // no new state, so game is over, time to stop our update loop
-                    clearInterval(this.intervalID);
+
+                if (this.state instanceof TitleSceneState) {
+                    // back to the title scene new state, so game is over for good
+                    // we need to reset some data in case player wants to play again
+
+                    this.map = 0;
+                    this.uiController.updateCompletedMaps(this.maps);
+                    this.player = new Player('Player 2', new Location(0, 0));
+                    this.state.player = this.player;
                 }
                 this.state.enter();
             }
@@ -367,25 +379,6 @@ class RandomGameBoard extends GameBoard {
                 currentRow.push(new Tile(row, column, type))
             }
         }
-    }
-}
-
-class LevelEditorBoard extends GameBoard {
-    constructor(terrain, rows, columns) {
-        super(terrain);
-        this.rows = rows;
-        this.columns = columns;
-
-        for (let row = 0; row < this.rows; row++) {
-            const currentRow = [];
-            this.board.push(currentRow);
-            for (let column = 0; column < this.columns; column++) {
-                let tile = new Tile(row, column, GAME_DATA.terrainOptions['grass']);
-                currentRow.push(tile)
-            }
-        }
-
-        this.setStartingLocation();
     }
 }
 
@@ -600,6 +593,7 @@ class SetupState extends State {
         super(player, uiController, gameBoard, audioController);
         this.dialogName = 'enterSetupState';
     }
+
     enter() {
         this.uiController.clearUI();
     }
@@ -629,11 +623,18 @@ class SetupState extends State {
  */
 class TitleSceneState extends State {
     enter(){
-        this.uiController.displayTitleScene();
+        this.spaceHasBeenHit = false;
+        this.uiController.displayTitleScene(this.handleSpaceHit.bind(this));
+    }
+
+    handleSpaceHit() {
+        this.spaceHasBeenHit = true;
+        console.log('Space hit!')
     }
 
     update(){
-
+        super.update();
+        if (this.spaceHasBeenHit) return {stateFinished: true}
     }
 
     exit(){
@@ -642,7 +643,6 @@ class TitleSceneState extends State {
         return new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
-
 
 /**
  * Basically a 2d Vector datastructure, but for clarity the values are called 
@@ -748,6 +748,8 @@ class MoveCommand extends Command {
         super(player, gameBoard);
         this.rows = gameBoard.rows;
         this.columns = gameBoard.columns;
+
+        console.log('setting up a move for', this.player.name)
     }
 
     /**
@@ -850,7 +852,6 @@ class MoveTwoCommand extends MoveCommand {
         return commandResult;
     }   
 }
-
 
 /**
  * Executing a MoveThreeCommand moves the oplayer three steps forward, if possible

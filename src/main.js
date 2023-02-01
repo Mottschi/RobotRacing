@@ -1,5 +1,5 @@
 import GameManager from "./game.js";
-import { DEFAULT_SETTINGS, GAME_DATA, LevelEditor } from "./game.js";
+import { DEFAULT_SETTINGS, GAME_DATA } from "./game.js";
 import { AudioController } from "./helpers.js";
 
 
@@ -24,14 +24,9 @@ const btnCloseSettingsWithSaving = document.getElementById('btn-save-settings');
 const root = document.querySelector(':root');
 
 // Setting up tthe event handlers
-btnStart.addEventListener('click', startGame);
-btnLevelEditor.addEventListener('click', startLevelEditor);
 btnOpenSettings.addEventListener('click', showSettings);
 btnCloseSettingsWithoutSaving.addEventListener('click', closeSettingsWithoutSaving);
 btnCloseSettingsWithSaving.addEventListener('click', saveSettings);
-
-// dev tool to export a map to save as possible static map (with some editing)
-btnExportMap.addEventListener('click', exportMap);
 
 // NOTE load default settings
 const settings = {
@@ -50,6 +45,9 @@ if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
 
+// Finally, we start the game engine
+startGame();
+
 // NOTE function definitions for event handlers, no direct code execution below this line
 /**
  * Generate a new map and start the game based on current settings.
@@ -57,8 +55,7 @@ generateInputValuesFromSettings();
 function startGame() {
     // start playing backgroundmusic, if setting is enabled
     const gm = new GameManager(settings);
-    gm.init();
-    gm.startGame();
+    gm.startGameEngine();
 }
 
 /**
