@@ -89,7 +89,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.mapsCompleted = 0;
+        this.mapsCompleted = 1;
 
         this.tileSize = settings.tileSize ? settings.tileSize : DEFAULT_SETTINGS.tileSize;
 
@@ -117,7 +117,7 @@ class GameManager {
 
     setupNextMap() {
         this.uiController.updateCompletedMaps(this.mapsCompleted);
-        
+
         if (this.mapsCompleted > 2) {
             // when we load a random game board, the size depends on settings
             this.rows = this.settings.rows ? this.settings.rows : DEFAULT_SETTINGS.rows;

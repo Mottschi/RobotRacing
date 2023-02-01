@@ -22,27 +22,35 @@
     display: grid;
     margin: 0;
     padding: 0;
+    gap: 0;
     grid-template-columns: repeat(var(--columns), 1fr);
-    width: calc(var(--tile-size * var(--columns)));
+    grid-template-rows: 1;
+    width: fit-content;
 }
 
 #game-player-info {
     width: 400px;
-    height: 100%;
+    height: 260px;
     display: flex;
     
     align-items: center;
     flex-direction: column;
+    order: 2;
 }
 
 #game-player-info > div {
-    margin: 1rem;
+    margin: 10px;
+}
+
+#game-player-info  h2 {
+    margin: 0;
 }
 
 #app {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
     width: 100%;
     height: 100%;
 
@@ -61,7 +69,12 @@ html {
 }
 
 #game-board-container {
-    margin: var(--tile-size);
+    padding: var(--tile-size);
+    order: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    
 }
 
 #navbar {
@@ -69,11 +82,11 @@ html {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: var(--tile-size);
+    padding: 50px;
 }
 
 #navbar .game-logo {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-family: 'projectsfenotype';
     
 }
@@ -113,7 +126,7 @@ html {
 }
 
 .icon {
-    width: 50px;
+    width: 64px;
     aspect-ratio: 1;
     margin: 0.5rem;
     text-align: center;
@@ -151,4 +164,30 @@ html {
     flex-direction: column;
     justify-content: center;
     height: 50vh;
+}
+
+@media (width >= 700) {
+    #navbar .game-logo {
+        font-size: 2rem;
+    }
+}
+
+@media (width >= 1200px) {
+    /* If the width gets big enough, put controls next to the grid instead of below */
+    #app {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    /* and make sure to put them on the left side */
+    #game-player-info {
+        order: 0;
+    }
+
+    /* If the screen width gets much bigger then the height (say, ultra wide screen), the 
+    grid size will be based on the height, and the grid will be drawn on the left of its
+    container, just next to the controls */
+    #game-board-container {
+        display: block;
+    }
 }

@@ -94,8 +94,8 @@ export class UIController {
      * Manages the variable HTML and CSS parts.
      */
     constructor() {
-        this.rows = null;
-        this.columns = null;
+        this.rows = 10;
+        this.columns = 10;
         this.root = document.querySelector(':root');
         this.dialogs = {};
         this.icons = {};
@@ -105,6 +105,8 @@ export class UIController {
 
         // This path is used for CSS variables, so needs to the path from CSS folder
         this.playerImagePath = '../assets/images/robot';
+
+        window.addEventListener('resize', this.setTileSize.bind(this));
     }
 
     /**
@@ -127,6 +129,11 @@ export class UIController {
         this.rows = rows;
         this.columns = columns;
         this.generateGrid();
+
+        // to make sure the board we draw will fit exactly into its container, we calculate 
+        // tileSize based on container width
+        this.setTileSize()
+
         this.drawBoard(gameBoard);
         this.initializePlayer(player);
     }
@@ -328,5 +335,18 @@ export class UIController {
         document.querySelectorAll('.counter-completed-maps').forEach(element => {
             element.textContent = completedMaps;
         });
+    }
+
+    setTileSize(){
+        const availableWidth = window.innerWidth - (window.innerWidth < 1200 ? 0 : 400);
+        const availableHeight = window.innerHeight - document.querySelector('nav').offsetHeight
+            - (window.innerWidth < 1200 ? 320 : 0);
+        const tileSizeWidth = availableWidth / (this.columns + 2);
+        const tileSizeHeight = availableHeight / (this.rows + 2);
+        console.log(availableHeight)
+        const tileSize = Math.floor(Math.min(tileSizeHeight, tileSizeWidth));
+        console.log('available height', availableHeight, window.innerHeight, document.querySelector('nav').offsetHeight)
+        console.log('setting tile size to', tileSize, 'options were width', tileSizeWidth, 'height', tileSizeHeight);
+        this.root.style.setProperty('--tile-size', `${tileSize}px`);
     }
 }

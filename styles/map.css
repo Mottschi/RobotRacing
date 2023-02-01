@@ -1,7 +1,7 @@
 :root {
     --tile-size: 30px;
-    --columns: 20;
-    --rows: 20;
+    --columns: 0;
+    --rows: 0;
     --player-sprite: none;
     --player-original-sprite: none;
     --goal-sprite: url('../assets/images/flag2.png');
