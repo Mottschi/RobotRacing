@@ -26,7 +26,7 @@
     grid-template-columns: repeat(var(--columns), 1fr);
     grid-template-rows: 1;
     width: fit-content;
-    flex-basis: 100%;
+    
 }
 
 #game-player-info {
@@ -125,7 +125,7 @@ nav {
 
 .icon {
     width: 64px;
-    aspect-ratio: 1;
+    height: 64px;
     margin: 0.5rem;
     text-align: center;
     display: flex;
@@ -146,6 +146,12 @@ nav {
 #game-dice-results .chosen {
     background-color: orange;
     pointer-events: none;
+}
+
+#game-inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #app > .inactive {
