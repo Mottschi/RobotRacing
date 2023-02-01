@@ -202,12 +202,11 @@ class GameManager {
 
                     this.map = 0;
                     this.uiController.updateCompletedMaps(this.maps);
-                    this.player = new Player('Player 2', new Location(0, 0));
+                    this.player = new Player('Player 1', new Location(0, 0));
                     this.state.player = this.player;
                 }
                 this.state.enter();
             }
-
         }
     }
 

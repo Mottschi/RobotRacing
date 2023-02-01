@@ -27,7 +27,7 @@
 }
 
 #game-player-info {
-    width: 100%;
+    width: 400px;
     height: 100%;
     display: flex;
     
@@ -57,6 +57,7 @@ html {
     background-image: var(--background-image);
     background-repeat: no-repeat;
     background-size: cover;
+    height: 100vh;
 }
 
 #game-board-container {
@@ -112,9 +113,9 @@ html {
 }
 
 .icon {
-    width: calc(2 * var(--tile-size));
+    width: 50px;
     aspect-ratio: 1;
-    margin: 1rem;
+    margin: 0.5rem;
     text-align: center;
     display: flex;
     justify-items: center;
