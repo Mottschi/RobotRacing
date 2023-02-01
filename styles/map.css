@@ -8,6 +8,7 @@
     --visibleWhileGameIsRunning: hidden;
 }
 
+/* Grid Tiles (background will be painted over with the terrain below */
 .tile {
     background-color: rebeccapurple;
     border: 1px solid black;
@@ -15,14 +16,13 @@
     height: var(--tile-size);
 }
 
+/* Terrain Options - setting multiple colors as options for (almost) each terrain to have some variety */
 .grass {
     background-color: forestgreen;
 }
-
 .grass2 {
     background-color: rgb(28, 155, 28);
 }
-
 .grass3 {
     background-color: rgb(43, 172, 43);
 }
@@ -30,7 +30,6 @@
 .water {
     background-color: blue;
 }
-
 .water2 {
     background-color: rgb(57, 57, 252);
 }
@@ -38,7 +37,6 @@
 .rock {
     background-color: rgb(80, 78, 78);
 }
-
 .rock2 {
     background-color: rgb(62, 60, 60);
 }
@@ -47,17 +45,21 @@
     background-color: firebrick;
 }
 
+
+/* The player sprite */
 #player {
     background-image: var(--player-sprite);
     background-repeat: no-repeat;
     background-size: contain;
 }
 
+/* The container for the divs holding the players lifes */
 #lifes {
     display: flex;
     gap: 0.5rem;
 }
 
+/* Each of these will hold exactly one life sprite */
 #lifes > div {
     background-image: var(--player-original-sprite);
     background-repeat: no-repeat;
@@ -66,10 +68,11 @@
     height: 30px;
 }
 
-#game-stats {
+#game-player {
     visibility: var(--visibleWhileGameIsRunning);
 }
 
+/* The flag (goal) sprite */
 #flag {
     background-image: var(--goal-sprite);
     background-repeat: no-repeat;

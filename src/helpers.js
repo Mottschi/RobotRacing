@@ -1,10 +1,11 @@
+export const DIRECTIONS = ['up', 'right', 'down', 'left'];
 
 /**
  * Returns a random element of an array.
  * @param {Array} arr Array of Elements
  * @returns any random Array Element
  */
-export let getRandomArrayElement = function getRandomArrayElement(arr) {
+export function getRandomArrayElement(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
 };
 
@@ -85,9 +86,13 @@ export class AudioController {
     }
 }
 
-export const DIRECTIONS = ['up', 'right', 'down', 'left'];
-
+// TODO Right now, the UI Controller also works as a kind of Asset Pool, would be good to extract 
+// that to an actual AssetPool class
 export class UIController {
+    /**
+     * Create a new UIController that can handle the interaction between the game and the website.
+     * Manages the variable HTML and CSS parts.
+     */
     constructor() {
         this.rows = null;
         this.columns = null;
@@ -102,15 +107,17 @@ export class UIController {
         this.playerImagePath = '../assets/images/robot';
     }
 
-    resetUI() {
-        console.log('resetting ui');
+    /**
+     * Clears the containers for the game board, the dice results and the selected dice.
+     */
+    clearUI() {
         document.getElementById('game-dice-results').innerHTML = '';
         document.getElementById('game-dice-chosen').innerHTML = '';
         document.getElementById('game-board-container').innerHTML = '';
     }
 
     /**
-     * 
+     * Takes care of all the setup steps necessary when a new map starts.
      * @param {GameBoard} gameBoard 
      * @param {Player} player 
      */
@@ -124,10 +131,16 @@ export class UIController {
         this.initializePlayer(player);
     }
 
-    stopGame() {
+    /**
+     * Hide all UI elements that should only be visible while a game is running.
+     */
+    handleGameOver() {
         this.root.style.setProperty('--visibleWhileGameIsRunning', 'hidden');
     }
 
+    /**
+     * Generates a grid exactly large enough to hold the current gameBoard.
+     */
     generateGrid() {
         const boardContainer = document.getElementById('game-board-container');
 
@@ -155,10 +168,12 @@ export class UIController {
         }
     }
 
-
+    /**
+     * Draws the gameBoard (terrain, flag) on the grid.
+     * @param {GameBoard} gameBoard 
+     */
     drawBoard(gameBoard) {
         if (document.querySelectorAll('#game-board-container > .grid-row > .tile').length !== this.columns * this.rows) {
-            console.log('drawing board of size', this.columns, 'x', this.rows);
             throw Error('[GameBoard]: Unable to draw map on this game board');
         }
 
@@ -172,15 +187,22 @@ export class UIController {
         document.querySelector(`[row='${row}'][column='${column}'`).setAttribute('id', 'flag');
     }
 
+    /**
+     * Displays the player char on the map and his life total in the UI.
+     * @param {Player} player 
+     */
     initializePlayer(player) {
         const sprite = `${this.playerImagePath}/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
-        const root = document.querySelector(':root');
-        root.style.setProperty('--player-original-sprite', `url('${sprite}')`);
+        this.root.style.setProperty('--player-original-sprite', `url('${sprite}')`);
         this.alignPlayerSprite(player);
         this.movePlayerSprite(player);
         this.updatePlayerLifes(player);
     }
 
+    /**
+     * Sets the display of players life to the current value.
+     * @param {Player} player 
+     */
     updatePlayerLifes(player) {
         const lifesElement = document.querySelector('#lifes');
         lifesElement.innerHTML = '';
@@ -259,8 +281,6 @@ export class UIController {
             })
             diceResultContainer.appendChild(newIconNode);
         });
-
-        
     }
 
     updateChosenDiceResults(commands) {
@@ -278,5 +298,11 @@ export class UIController {
             newEmptyIconNode.classList.add('icon');
             diceChosenContainer.appendChild(newEmptyIconNode);
         }
+    }
+
+    updateCompletedMaps(completedMaps) {
+        document.querySelectorAll('.counter-completed-maps').forEach(element => {
+            element.textContent = completedMaps;
+        });
     }
 }

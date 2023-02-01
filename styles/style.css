@@ -26,7 +26,6 @@
 
 #game-input-container {
     width: 100%;
-    /* height: calc(var(--rows) * var(--tile-size)); */
     height: 100vh;
     display: flex;
     
@@ -104,11 +103,6 @@ body {
     display: none;
 }
 
-/* TODO This only works in chrome, need to come up with a JS solution 
-solution (could hide/show via JS instead?) */
-#dlg-settings:has(#input-random-map:checked) .settings-random{
-    display: flex;
-}
 
 .dev {
     display: var(--dev-display);

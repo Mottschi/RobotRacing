@@ -37,8 +37,7 @@ const root = document.querySelector(':root');
 // Additional Variables
 let currentBoard = null;
 
-
-// TODO Setting event handlers for the control elements (development only, needs to be removed/replaced by dice picking)
+// Setting up tthe event handlers
 btnStart.addEventListener('click', startGame);
 btnLevelEditor.addEventListener('click', startLevelEditor);
 btnOpenSettings.addEventListener('click', showSettings);
@@ -48,24 +47,22 @@ btnCloseSettingsWithSaving.addEventListener('click', saveSettings);
 // dev tool to export a map to save as possible static map (with some editing)
 btnExportMap.addEventListener('click', exportMap);
 
-
 // NOTE load default settings
 const settings = {
-    rows: DEFAULT_SETTINGS.rows,
-    columns: DEFAULT_SETTINGS.columns,
+    // rows and columns are part of the dev only level editor
+    // rows: DEFAULT_SETTINGS.rows,
+    // columns: DEFAULT_SETTINGS.columns,
     tileSize: DEFAULT_SETTINGS.tileSize,
-    randomMap: DEFAULT_SETTINGS.randomMap,
     music: DEFAULT_SETTINGS.music,
     soundEffects: DEFAULT_SETTINGS.soundEffects,
-    musicVolume: 0.5,
-    soundEffectsVolume: 1,
+    musicVolume: DEFAULT_SETTINGS.musicVolume,
+    soundEffectsVolume: DEFAULT_SETTINGS.soundEffectsVolume,
 }
 
 // setting up AudioController for sound effects and music
 const audioController = new AudioController(settings);
 settings.audioController = audioController;
 if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.backgroundMusic);
-
 
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
@@ -78,9 +75,12 @@ function startGame() {
     // start playing backgroundmusic, if setting is enabled
     const gm = new GameManager(settings);
     gm.init();
-    currentBoard = gm.startGame();
+    gm.startGame();
 }
 
+/**
+ * DEV OPTION: Opens the Level Editor (will not be available in the actual game)
+ */
 function startLevelEditor() {
     const gm = new LevelEditor(settings);
     currentBoard = gm.startGame();
@@ -109,7 +109,8 @@ function generateInputValuesFromSettings() {
 }
 
 /**
- * Close setting window without modifying the current settings. Values in the setting inputs are reset to their current values from settings.
+ * Close setting window without modifying the current settings. Values in the setting 
+ * inputs are reset to their current values from settings.
  */
 function closeSettingsWithoutSaving() {
     generateInputValuesFromSettings();
@@ -117,7 +118,7 @@ function closeSettingsWithoutSaving() {
 }
 
 /**
- * Close setting window and save the values from setting inputs to the settings variable.
+ * Close settings window and save the values from setting inputs to the settings object.
  */
 function saveSettings() {
     settings.tileSize = Number(inputTilesize.value);
@@ -155,6 +156,7 @@ function saveSettings() {
 }
 
 /**
+ * DEV OPTION - This is part of the level editor, which will be disabled in actual game.
  * Generates and automatically downloads a json file with the current map data.
  */
 function exportMap () {

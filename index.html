@@ -13,22 +13,23 @@
 <body>
     <nav id="navbar">
         <div class="game-logo">RobotRacing</div>
+        <div>
+            <button id="btn-start-game">Start Game</button>
+        </div>
         <button class="settings">
             <img src="./assets/images/gears.svg" alt="Gear icon to access settings">
         </button>
     </nav>
     <main id="app">
-        <div id="game-stats">
-            <h2>Lifes: </h2>
-            <div id="lifes">
-                
+        <div id="game-input-container">
+            <div id="game-lifes">
+                <h2>Lifes: </h2>
+                <div id="lifes">
+                    
+                </div>
+    
             </div>
 
-        </div>
-        <div id="game-input-container">
-            <div>
-                <button id="btn-start-game">Start Game</button>
-            </div>
             <div id="game-inputs">
                 <div id="game-dice-results">
 
@@ -61,13 +62,10 @@
         <dialog id="dlg-settings">
             <div class="settings-container">
                 <h3>Game Settings:</h3>
-    
-                <div class="settings-input">
-                    <label for="random-map">Random Map: </label>
-                    <input type="checkbox" name="random-map" id="input-random-map">
-                </div>
             
-                <div id='settings-columns' class="settings-input settings-random">
+                <!-- The commented out inputs are part of a dev only option (the level editor,
+                    not supposed to be part of actual game) -->
+                <!-- <div id='settings-columns' class="settings-input settings-random">
                     <label for="columns">Columns: </label>
                     <input type="number" name="columns" id="input-columns" value="10" step="5" min="10" max="30">
                 </div>
@@ -75,7 +73,7 @@
                 <div id='settings-rows' class="settings-input settings-random">
                     <label for="rows">Rows: </label>
                     <input type="number" name="rows" id="input-rows" value="10" step="5" min="10" max="30">
-                </div>
+                </div> -->
     
                 <div id='settings-music'class="settings-input">
                     <label for="music">Music: </label>
@@ -110,11 +108,12 @@
         </dialog>
     
         <dialog id="dlg-enter-map-complete-state">
-            <p>Map Complete</p>
+            <p>Map #<span class="counter-completed-maps"></span> Complete!</p>
         </dialog>
     
         <dialog id="dlg-enter-game-over-state">
             <p>Game over man, game over!</p>
+            <p>You managed to complete <span class="counter-completed-maps"></span> maps in total!</p>
         </dialog>
 
         <dialog id="dlg-enter-input-state">

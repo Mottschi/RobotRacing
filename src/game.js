@@ -30,6 +30,8 @@ export const DEFAULT_SETTINGS = {
     randomMap: false,
     music: false,
     soundEffects: false,
+    musicVolume: 1,
+    soundEffectsVolume: 1,
 }
 
 /**
@@ -75,7 +77,7 @@ export const GAME_DATA = {
     startingLife: 3,
     showDev: false,
     diceAmount: 5,
-    turnTimeInMS: 300,
+    turnTimeInMS: 500,
 }
 
 class GameManager {
@@ -88,7 +90,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.map = 0;
+        this.mapsCompleted = 0;
 
         this.tileSize = settings.tileSize ? settings.tileSize : DEFAULT_SETTINGS.tileSize;
 
@@ -111,26 +113,28 @@ class GameManager {
             this.uiController.addIcon(iconName, GAME_DATA.icons[iconName]);
         }
         this.player = new Player('Player 1', new Location(0, 0));
+        this.uiController.updateCompletedMaps(this.maps);
     }
 
     setupNextMap() {
-        if (this.map > 2) {
+        if (this.mapsCompleted > 2) {
             // when we load a random game board, the size depends on settings
             this.rows = this.settings.rows ? this.settings.rows : DEFAULT_SETTINGS.rows;
             this.columns = this.settings.columns ? this.settings.columns : DEFAULT_SETTINGS.columns;
             this.gameBoard = new RandomGameBoard(GAME_DATA.terrainOptions, this.rows, this.columns);
         } else {
             // when we load a default game board, the size will depend on the loaded map
-            this.gameBoard = new DefaultGameBoard(GAME_DATA.terrainOptions, this.map);
+            this.gameBoard = new DefaultGameBoard(GAME_DATA.terrainOptions, this.mapsCompleted);
             this.rows = this.gameBoard.rows;
             this.columns = this.gameBoard.columns;
         }
 
         this.gameBoard.init();
+
+        // Set players starting location and initial heading
         const {row, column} = this.gameBoard.startingLocation;
         this.player.location = new Location(row, column);
-
-        this.map++;
+        this.player.facingDirection = 0;
 
         return this.gameBoard;
     }
@@ -215,10 +219,10 @@ class GameManager {
     checkForWin() {
         if (this.player.location.equal(this.gameBoard.flagLocation)) {
             this.state.exit(true);
-            this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController);
+            this.mapsCompleted++;
+            this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController, this.mapsCompleted);
             this.state.enter();
         }
-
     }
 
     devControls() {
@@ -565,15 +569,21 @@ class GameOverState extends State {
     }
 
     exit() {
-        this.uiController.stopGame();
+        this.uiController.handleGameOver();
         return null;
     }
 }
 
 class MapCompletedState extends State {
-    constructor (player, uiController, gameBoard, audioController) {
+    constructor (player, uiController, gameBoard, audioController, mapsCompleted) {
         super(player, uiController, gameBoard, audioController);
-        this.dialogName = 'enterMapCompleteState'
+        this.dialogName = 'enterMapCompleteState';
+        this.mapsCompleted = mapsCompleted;
+    }
+
+    enter() {
+        super.enter();
+        this.uiController.updateCompletedMaps(this.mapsCompleted);
     }
 
     update() {
@@ -598,7 +608,7 @@ class SetupState extends State {
         this.dialogName = 'enterSetupState';
     }
     enter() {
-        this.uiController.resetUI();
+        this.uiController.clearUI();
     }
 
     /**
@@ -616,6 +626,20 @@ class SetupState extends State {
 
     exit() {
         return new InputState(this.player, this.uiController, this.gameBoard, this.audioController);
+    }
+}
+
+class GameNotRunningState extends State {
+    enter(){
+
+    }
+
+    update(){
+
+    }
+
+    exit(){
+        
     }
 }
 
