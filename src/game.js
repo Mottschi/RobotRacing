@@ -75,7 +75,6 @@ export const GAME_DATA = {
     },
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 3,
-    showDev: false,
     diceAmount: 5,
     turnTimeInMS: 500,
 }
@@ -142,11 +141,6 @@ class GameManager {
     startGame() {
         this.state = new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
         this.state.enter();
-
-        if (GAME_DATA.showDev) {
-            this.devControls();
-            this.uiController.showDevTools();
-        }
 
         this.intervalID = setInterval(()=>{
             this.update();
@@ -569,8 +563,7 @@ class GameOverState extends State {
     }
 
     exit() {
-        this.uiController.displayTitleScene();
-        return null;
+        return new TitleSceneState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
 
@@ -646,7 +639,6 @@ class TitleSceneState extends State {
     exit(){
         // As we are leaving the title scene, we have to toggle display 
         this.uiController.displayGameScene();
-
         return new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
@@ -935,51 +927,6 @@ class MoveBackwardsCommand extends MoveCommand {
         const result = this.stepForward();
         this.player.facingDirection = (this.player.facingDirection + 2) % 4;
         return result;
-    }
-}
-
-/**
- * Level Editor - used for handcrafting levels, Dev tool that will not be visible in final game
- * but is still part of the "game engine"
- */
-export class LevelEditor extends GameManager{
-    startGame() {
-        // initialize all tiles with grass
-        this.gameBoard = new LevelEditorBoard(GAME_DATA.terrainOptions, this.rows, this.columns);
-
-        // set up the level editor in the browser
-        this.uiController.setupNewMap(this.gameBoard, this.player);
-
-        // TODO consider moving html interaction to uiController 
-        // (worth it considering level editor is not part of final game?)
-
-        // attach event handlers to all tiles that cycle through the terrain options on click
-        document.querySelectorAll('.tile').forEach(tile => tile.addEventListener('click', this.changeTerrain.bind(this)));
-        return this.gameBoard.board;
-    }
-
-    changeTerrain(event) {
-        const tileDiv = event.target;
-        const row = tileDiv.getAttribute('row');
-        const column = tileDiv.getAttribute('column');
-        const tile = this.gameBoard.board[row][column];
-        tileDiv.classList.remove(tile.terrainClass)
-        switch (tile.terrainName) {
-            case 'grass':
-                tile.terrainName = 'rock';
-                break;
-            case 'rock':
-                tile.terrainName = 'water';
-                break;
-            case 'water':
-                tile.terrainName = 'lava';
-                break;
-            case 'lava':
-                tile.terrainName = 'grass';
-                break;
-        }
-        tile.terrainClass = tile.terrainName;
-        tileDiv.classList.add(tile.terrainName);
     }
 }
 

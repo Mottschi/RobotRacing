@@ -1,9 +1,6 @@
 @import url('./reset.css');
 @import url('./map.css');
 
-:root {
-    --dev-display: none;
-}
 
 body {
     --background-color:#4158D0;
@@ -101,11 +98,6 @@ body {
 
 #dlg-settings .settings-random {
     display: none;
-}
-
-
-.dev {
-    display: var(--dev-display);
 }
 
 #game-dice-results, #game-dice-chosen {
