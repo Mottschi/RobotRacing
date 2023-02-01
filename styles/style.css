@@ -83,7 +83,7 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 50px;
-    font-size: 1.5rem;
+    font-size: 1rem;
     font-family: 'projectsfenotype';
 }
 
@@ -185,14 +185,14 @@ nav {
     }
 }
 
-@media screen and (525 <= width < 700) {
-    nav  {
+@media (width >= 525px) {
+    nav#navbar > .game-logo  {
         font-size: 1.5rem;
     }
 }
 
-@media screen and (width >= 700) {
-    nav {
-        font-size: 2rem !important;
+@media (width >= 700px) {
+    nav#navbar > .game-logo {
+        font-size: 2rem;
     }
 }
