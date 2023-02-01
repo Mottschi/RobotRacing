@@ -8,8 +8,7 @@ import { getRandomArrayElement, UIController } from "./helpers.js";
 import easyMap from '../assets/maps/easy.js';
 import mediumMap from '../assets/maps/medium.js';
 import hardMap from '../assets/maps/hard.js';
-import mountainMap from '../assets/maps/mountains.js';
-import startinglocationtest from "../assets/maps/startinglocationtest.js";
+
 
 class Terrain {
     constructor(name, classes) {
@@ -76,35 +75,24 @@ export const GAME_DATA = {
     startingLife: 3,
     showDev: false,
     diceAmount: 5,
+    turnTimeInMS: 300,
 }
 
 class GameManager {
     /**
      * Create a new game manager for a round of RobotRacing
-     * @param {Object} setup Optional setup instructions
+     * @param {Object} settings Optional settings instructions
      */
-    constructor(setup) {
+    constructor(settings) {
+        this.settings = settings;
+
         this.intervalID = null;
         this.state = null;
+        this.map = 0;
 
-        this.tileSize = setup.tileSize ? setup.tileSize : DEFAULT_SETTINGS.tileSize;
-        this.randomMap = setup.randomMap !== undefined ? setup.randomMap : DEFAULT_SETTINGS.randomMap;
+        this.tileSize = settings.tileSize ? settings.tileSize : DEFAULT_SETTINGS.tileSize;
 
-        this.audioController = setup.audioController;
-       
-        this.terrainOptions = GAME_DATA.terrainOptions;
-
-        if (this.randomMap) {
-            // when we load a random game board, the size depends on settings
-            this.rows = setup.rows ? setup.rows : DEFAULT_SETTINGS.rows;
-            this.columns = setup.columns ? setup.columns : DEFAULT_SETTINGS.columns;
-            this.gameBoard = new RandomGameBoard(this.terrainOptions, this.rows, this.columns);
-        } else {
-            // when we load a default game board, the size will depend on the loaded map
-            this.gameBoard = new DefaultGameBoard(this.terrainOptions);
-            this.rows = this.gameBoard.rows;
-            this.columns = this.gameBoard.columns;
-        }
+        this.audioController = settings.audioController;
         
         this.uiController = new UIController(this.rows, this.columns);
     }
@@ -122,15 +110,33 @@ class GameManager {
         for (let iconName in GAME_DATA.icons) {
             this.uiController.addIcon(iconName, GAME_DATA.icons[iconName]);
         }
+        this.player = new Player('Player 1', new Location(0, 0));
+    }
 
-        const startingLocation = this.randomMap ? this.gameBoard.getRandomStartingLocation() : this.gameBoard.getDefaultStartingLocation();
-        this.player = new Player('Player 1', new Location(startingLocation.row, startingLocation.column));
+    setupNextMap() {
+        if (this.map > 2) {
+            // when we load a random game board, the size depends on settings
+            this.rows = this.settings.rows ? this.settings.rows : DEFAULT_SETTINGS.rows;
+            this.columns = this.settings.columns ? this.settings.columns : DEFAULT_SETTINGS.columns;
+            this.gameBoard = new RandomGameBoard(GAME_DATA.terrainOptions, this.rows, this.columns);
+        } else {
+            // when we load a default game board, the size will depend on the loaded map
+            this.gameBoard = new DefaultGameBoard(GAME_DATA.terrainOptions, this.map);
+            this.rows = this.gameBoard.rows;
+            this.columns = this.gameBoard.columns;
+        }
+
+        this.gameBoard.init();
+        const {row, column} = this.gameBoard.startingLocation;
+        this.player.location = new Location(row, column);
+
+        this.map++;
+
+        return this.gameBoard;
     }
 
     startGame() {
-        this.uiController.setupNewGame(this.gameBoard, this.player);
-
-        this.state = new InputState(this.player, this.uiController, this.gameBoard, this.audioController);
+        this.state = new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
         this.state.enter();
 
         if (GAME_DATA.showDev) {
@@ -140,7 +146,7 @@ class GameManager {
 
         this.intervalID = setInterval(()=>{
             this.update();
-        }, 1000);
+        }, GAME_DATA.turnTimeInMS);
     }
 
     // GameManagers update method calls update on whatever is the current state
@@ -148,7 +154,7 @@ class GameManager {
     update() {
         // states update methods will return nothing (undefined) if nothing was done
         // if an action was taken, the state will return information on the action results
-        const response = this.state.update();
+        const response = this.state.update(this);
         if (response) {
             // check for and deal with all possible outcomes
             if (response.landedOnTerrain) {
@@ -174,6 +180,8 @@ class GameManager {
 
                 this.uiController.movePlayerSprite(this.player);
                 this.uiController.alignPlayerSprite(this.player);
+
+                this.checkForWin();
             }
 
             if (response.damage) {
@@ -183,6 +191,10 @@ class GameManager {
             // check if it is time to move on to the next state
             if (response.stateFinished) {
                 this.state = this.state.exit();
+                if (!this.state) {
+                    // no new state, so game is over, time to stop our update loop
+                    clearInterval(this.intervalID);
+                }
                 this.state.enter();
             }
 
@@ -198,6 +210,15 @@ class GameManager {
             this.state = new GameOverState(this.player, this.uiController, this.gameBoard, this.audioController);
             this.state.enter();
         }
+    }
+
+    checkForWin() {
+        if (this.player.location.equal(this.gameBoard.flagLocation)) {
+            this.state.exit(true);
+            this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController);
+            this.state.enter();
+        }
+
     }
 
     devControls() {
@@ -262,41 +283,63 @@ class GameBoard {
     constructor(terrain) {
         this.board = [];
         this.terrain = terrain;
+        this.startingLocation = null;
+        this.flagLocation = null;
     }
 
-    // For random maps, the game picks a random location on the bottom row that has grass
-    getRandomStartingLocation() {
-        return getRandomArrayElement(this.board[this.board.length-1].filter(tile => tile.terrainName === 'grass'));
+    init() {
+        this.setStartingLocation();
+        this.setFlagLocation();
     }
 
-    // For the saved maps, the game will always start on the bottom row, on the first grass tile from the right
-    getDefaultStartingLocation() {
-        return this.board[this.board.length-1].reduce((acc, tile) => {
+    getDimension(){
+        return {rows: this.rows, columns: this.columns}
+    }
+
+    // the player will always start on the bottom row, on the first grass tile found going
+    // from the bottom right corner
+    setStartingLocation() {
+        let startTile = this.board[this.board.length-1].reduce((acc, tile) => {
             if (tile.terrainName === 'grass') return tile;
             return acc;
         })
+
+        // TODO In cases where there was no grass on the bottom row, we force some into bottom right corner
+        if (!this.startingLocation) {
+            this.board[this.rows-1][this.columns-1] = new Tile(0, 0, GAME_DATA.terrainOptions['grass']);
+        }
+
+        this.startingLocation = startTile;
     }
+
+    // similar to starting location, but with top left alignment instead of bottom right
+    setFlagLocation() {
+        let flagTile = this.board[0].filter(tile => tile.terrainName === 'grass')[0];
+        
+        if (!flagTile) {
+            this.board[0][0] = new Tile(0, 0, GAME_DATA.terrainOptions['grass']);
+            flagTile = this.board[0][0];
+        }
+        this.flagLocation = flagTile;
+    }
+
+    
 }
 
 class DefaultGameBoard extends GameBoard {
-    constructor(terrain) {
+    constructor(terrain, map) {
         super(terrain);
 
-        let savedMap
-        savedMap = easyMap;
-        // savedMap = mediumMap;
-        // savedMap = hardMap;
-        // savedMap = mountainMap;
-        // savedMap = startinglocationtest;
+        const currentMap = [easyMap, mediumMap, hardMap][map];
 
-        this.rows = savedMap.length;
-        this.columns = savedMap[0].length;
+        this.rows = currentMap.length;
+        this.columns = currentMap[0].length;
         
         for (let row = 0; row < this.rows; row++) {
             const currentRow = [];
             this.board.push(currentRow);
             for (let column = 0; column < this.columns; column++) {
-                const terrainName = savedMap[row][column];
+                const terrainName = currentMap[row][column];
                 let tile = new Tile(row, column, GAME_DATA.terrainOptions[terrainName]);
 
                 currentRow.push(tile)
@@ -343,6 +386,8 @@ class LevelEditorBoard extends GameBoard {
                 currentRow.push(tile)
             }
         }
+
+        this.setStartingLocation();
     }
 }
 
@@ -377,7 +422,7 @@ class State {
         this.audioController = audioController;
 
         this.updateCount = 0;
-        this.dialogName = '';        
+        this.dialogName = '';
     }
 
     /**
@@ -461,15 +506,15 @@ class ExecuteCommandQueueState extends State {
     constructor(player, uiController, gameBoard, audioController, commandQueue) {
         super(player, uiController, gameBoard, audioController);
         this.commandQueue = commandQueue.map(command => new command(player, gameBoard));
-        this.dialogName = 'enterExecuteState';
-        this.startLocation = structuredClone(player.location);
+        this.dialogName = 'enterExecuteState';  
     }
 
     // When entering input state, we have to:
     // 1. Show the enter state dialog for 3 update calls
     enter () {
         super.enter();
-        this.player.turnStartLocation = structuredClone(this.player.location);
+        const {row, column} = this.player.location;
+        this.player.turnStartLocation = new Location(row, column);
     }
 
     // The remaining execution steps are handled in update:
@@ -516,17 +561,18 @@ class GameOverState extends State {
     update() {
         super.update();
         if (this.updateCount === 3) this.audioController.playClip('gameOver');
-        if (this.updateCount === 8) this.exit();
+        if (this.updateCount === 8) return {stateFinished: true}
     }
 
     exit() {
         this.uiController.stopGame();
+        return null;
     }
 }
 
 class MapCompletedState extends State {
-    constructor (player, uiController, gameBoard) {
-        super(player, uiController, gameBoard);
+    constructor (player, uiController, gameBoard, audioController) {
+        super(player, uiController, gameBoard, audioController);
         this.dialogName = 'enterMapCompleteState'
     }
 
@@ -534,11 +580,42 @@ class MapCompletedState extends State {
         super.update();
         // This state will automatically end after a couple of seconds
         // (just shows the dialog and then moves on);
-        if (this.updateCount > 3) return {stateFinished: true};
+        if (this.updateCount > 3) {
+            return {stateFinished: true};
+        }
+
     }
 
     exit() {
+        // time to move on to next map
+        return new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
+    }
+}
+
+class SetupState extends State {
+    constructor(player, uiController, gameBoard, audioController){
+        super(player, uiController, gameBoard, audioController);
+        this.dialogName = 'enterSetupState';
+    }
+    enter() {
+        this.uiController.resetUI();
+    }
+
+    /**
+     * 
+     * @param {GameManager} gameManager 
+     * @returns 
+     */
+    update(gameManager) {
+        super.update();
         
+        this.gameBoard = gameManager.setupNextMap();
+        this.uiController.setupNewMap(this.gameBoard, this.player);
+        return {stateFinished: true}
+    }
+
+    exit() {
+        return new InputState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
 
@@ -548,9 +625,18 @@ class MapCompletedState extends State {
  * row and column instead of x and y
  */
 class Location {
+    /**
+    * @param {Number} row
+    * @param {Number} column
+    */
     constructor(row, column) {
         this.row = row;
         this.column = column;
+    }
+
+
+    equal(other) {
+        return this.row === other.row && this.column === other.column;
     }
 }
 
@@ -827,10 +913,10 @@ class MoveBackwardsCommand extends MoveCommand {
 export class LevelEditor extends GameManager{
     startGame() {
         // initialize all tiles with grass
-        this.gameBoard = new LevelEditorBoard(this.terrainOptions, this.rows, this.columns);
+        this.gameBoard = new LevelEditorBoard(GAME_DATA.terrainOptions, this.rows, this.columns);
 
         // set up the level editor in the browser
-        this.uiController.setupNewGame(this.gameBoard, this.player);
+        this.uiController.setupNewMap(this.gameBoard, this.player);
 
         // TODO consider moving html interaction to uiController 
         // (worth it considering level editor is not part of final game?)

@@ -88,9 +88,9 @@ export class AudioController {
 export const DIRECTIONS = ['up', 'right', 'down', 'left'];
 
 export class UIController {
-    constructor(rows, columns) {
-        this.rows = rows;
-        this.columns = columns;
+    constructor() {
+        this.rows = null;
+        this.columns = null;
         this.root = document.querySelector(':root');
         this.dialogs = {};
         this.icons = {};
@@ -102,8 +102,23 @@ export class UIController {
         this.playerImagePath = '../assets/images/robot';
     }
 
-    setupNewGame(gameBoard, player) {
+    resetUI() {
+        console.log('resetting ui');
+        document.getElementById('game-dice-results').innerHTML = '';
+        document.getElementById('game-dice-chosen').innerHTML = '';
+        document.getElementById('game-board-container').innerHTML = '';
+    }
+
+    /**
+     * 
+     * @param {GameBoard} gameBoard 
+     * @param {Player} player 
+     */
+    setupNewMap(gameBoard, player) {
         this.root.style.setProperty('--visibleWhileGameIsRunning', 'visible');
+        const {rows, columns} = gameBoard.getDimension();
+        this.rows = rows;
+        this.columns = columns;
         this.generateGrid();
         this.drawBoard(gameBoard);
         this.initializePlayer(player);
@@ -143,6 +158,7 @@ export class UIController {
 
     drawBoard(gameBoard) {
         if (document.querySelectorAll('#game-board-container > .grid-row > .tile').length !== this.columns * this.rows) {
+            console.log('drawing board of size', this.columns, 'x', this.rows);
             throw Error('[GameBoard]: Unable to draw map on this game board');
         }
 
@@ -151,6 +167,9 @@ export class UIController {
                 document.querySelector(`[row='${row}'][column='${column}'`).classList.add(gameBoard.board[row][column].terrainClass);
             }
         }
+
+        const {row, column} = gameBoard.flagLocation;
+        document.querySelector(`[row='${row}'][column='${column}'`).setAttribute('id', 'flag');
     }
 
     initializePlayer(player) {

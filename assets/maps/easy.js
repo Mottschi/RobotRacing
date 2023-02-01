@@ -1,1 +1,10 @@
-export default [["rock","rock","rock","rock","rock","rock","rock","lava","water","water"],["grass","grass","grass","grass","grass","grass","rock","lava","water","water"],["grass","grass","rock","grass","grass","grass","rock","lava","water","water"],["grass","rock","grass","grass","grass","rock","grass","lava","grass","grass"],["grass","grass","grass","grass","rock","grass","grass","grass","grass","grass"],["grass","grass","grass","rock","grass","grass","grass","grass","water","grass"],["grass","grass","rock","grass","grass","grass","rock","lava","water","grass"],["grass","water","grass","grass","grass","rock","grass","lava","grass","grass"],["grass","water","grass","grass","rock","grass","grass","lava","grass","grass"],["grass","grass","grass","grass","grass","grass","grass","grass","grass","grass"]]
+export default [["rock","rock","rock","rock","rock","rock","rock","lava","water","water"],
+                ["grass","grass","grass","grass","grass","grass","rock","lava","water","water"],
+                ["grass","grass","rock","grass","grass","grass","rock","lava","water","water"],
+                ["grass","rock","grass","grass","grass","rock","grass","lava","grass","grass"],
+                ["rock","grass","grass","grass","rock","grass","grass","grass","grass","grass"],
+                ["grass","grass","grass","rock","grass","grass","grass","grass","water","grass"],
+                ["grass","grass","rock","grass","grass","grass","rock","lava","water","grass"],
+                ["grass","water","grass","grass","grass","rock","grass","lava","grass","grass"],
+                ["grass","water","grass","grass","rock","grass","grass","lava","grass","grass"],
+                ["grass","grass","grass","grass","grass","grass","grass","grass","grass","grass"]]

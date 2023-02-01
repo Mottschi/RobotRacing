@@ -4,6 +4,7 @@
     --rows: 20;
     --player-sprite: none;
     --player-original-sprite: none;
+    --goal-sprite: url('../assets/images/flag2.png'); 
     --visibleWhileGameIsRunning: hidden;
 }
 
@@ -67,4 +68,11 @@
 
 #game-stats {
     visibility: var(--visibleWhileGameIsRunning);
+}
+
+#flag {
+    background-image: var(--goal-sprite);
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-color: forestgreen;
 }
