@@ -151,7 +151,6 @@ export class UIController {
         this.root.style.setProperty('--background-image', 'var(--title-scene)');
 
         window.addEventListener('keydown', (event)=>{
-            console.log('key hit', event.code)
             if (event.code === 'Space') callback();
         })
     }
@@ -343,10 +342,7 @@ export class UIController {
             - (window.innerWidth < 1200 ? 320 : 0);
         const tileSizeWidth = availableWidth / (this.columns + 2);
         const tileSizeHeight = availableHeight / (this.rows + 2);
-        console.log(availableHeight)
         const tileSize = Math.floor(Math.min(tileSizeHeight, tileSizeWidth));
-        console.log('available height', availableHeight, window.innerHeight, document.querySelector('nav').offsetHeight)
-        console.log('setting tile size to', tileSize, 'options were width', tileSizeWidth, 'height', tileSizeHeight);
         this.root.style.setProperty('--tile-size', `${tileSize}px`);
     }
 }

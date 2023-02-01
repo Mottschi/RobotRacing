@@ -77,19 +77,16 @@ html {
     
 }
 
-#navbar {
+nav {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding: 50px;
-}
-
-#navbar .game-logo {
     font-size: 1.5rem;
     font-family: 'projectsfenotype';
-    
 }
+
 
 #navbar .settings {
     background: none;
@@ -166,11 +163,7 @@ html {
     height: 50vh;
 }
 
-@media (width >= 700) {
-    #navbar .game-logo {
-        font-size: 2rem;
-    }
-}
+
 
 @media (width >= 1200px) {
     /* If the width gets big enough, put controls next to the grid instead of below */
@@ -189,5 +182,17 @@ html {
     container, just next to the controls */
     #game-board-container {
         display: block;
+    }
+}
+
+@media screen and (525 <= width < 700) {
+    nav  {
+        font-size: 1.5rem;
+    }
+}
+
+@media screen and (width >= 700) {
+    nav {
+        font-size: 2rem !important;
     }
 }

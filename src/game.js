@@ -20,16 +20,15 @@ class Terrain {
 /**
  * Default settings for the game. These values can be modified
  * by the application and will effect either
- * - the ongoing game: music, soundEffects, tileSize
+ * - the ongoing game: music, soundEffects
  * - the next new game: rows, columns, randomMap, players (if I get to that point...)
  */
 export const DEFAULT_SETTINGS = {
     rows: 10,
     columns: 10,
-    tileSize: 50,
     randomMap: false,
-    music: false,
-    soundEffects: false,
+    music: true,
+    soundEffects: true,
     musicVolume: 1,
     soundEffectsVolume: 1,
 }
@@ -89,9 +88,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.mapsCompleted = 1;
-
-        this.tileSize = settings.tileSize ? settings.tileSize : DEFAULT_SETTINGS.tileSize;
+        this.mapsCompleted = 2;
 
         this.audioController = settings.audioController;
         
@@ -628,7 +625,6 @@ class TitleSceneState extends State {
 
     handleSpaceHit() {
         this.spaceHasBeenHit = true;
-        console.log('Space hit!')
     }
 
     update(){
@@ -747,8 +743,6 @@ class MoveCommand extends Command {
         super(player, gameBoard);
         this.rows = gameBoard.rows;
         this.columns = gameBoard.columns;
-
-        console.log('setting up a move for', this.player.name)
     }
 
     /**
