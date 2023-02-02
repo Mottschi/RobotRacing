@@ -37,7 +37,11 @@ Choosing this option will make your robot turn 90 degrees to the left.
 Choosing this option will make your robot turn 90 degrees to the right.
 
 ## Movement
-Each turn you will have to pick three of the movement-options you are presented with. They will be executed in the order you picked them. Once picked, there is no way to reverse that decision, so choose carefully!
+Each turn you will have to pick three of the movement-options you are presented with, like this:
+
+![Movement UI](/assets/images/movement.png)
+
+As you pick your moves, they will be added to the queue below. The chosen moves from the queue will be executed in the order you picked them. **Once picked, there is no way to reverse that decision**, so choose carefully!
 
 ## Terrain
 The map is diviged into a grid of tiles with different terrain.
@@ -69,7 +73,7 @@ Your robot can technically enter this terrain, but will be destroyed when doing 
 ## The finish-line
 ![Finish-flag](/assets/images/flag2.png)
 
-When you end a move on this tile, you will complete the current map. The game will grant you one extra life (up to a maximum of 5 life) and move on to the next map.
+When you end a move on the tile holding this flag, you will complete the current map. The game will grant you one extra life (up to a maximum of 5 life) and move on to the next map.
 
 ## Endless mode
 The first 3 maps in this game will always be the same 3 maps, but after you complete all of these in order, you will reach the endless mode, where you will continue to be challenged by randomly generated maps until you finally run out of lifes.
@@ -138,4 +142,4 @@ Robot icon (no changes made) created by Omara Abderraouf and distributed via CC 
 
 ***
 ## Play the game
-[Click here](https://github.com/Mottschi/ironhack-project-1-robot-race/deployments/activity_log?environment=github-pages) to play the game.
+[Click here](https://mottschi.github.io/ironhack-project-1-robot-race/) to play the game.
