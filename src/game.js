@@ -10,6 +10,7 @@ import mediumMap from '../assets/maps/medium.js';
 import hardMap from '../assets/maps/hard.js';
 
 
+// Each Terrain holds the name(type) of the terrain, as well as an array of the classes available to terrain of this type
 class Terrain {
     constructor(name, classes) {
         this.name = name;
@@ -29,8 +30,8 @@ export const DEFAULT_SETTINGS = {
     randomMap: false,
     music: true,
     soundEffects: true,
-    musicVolume: 1,
-    soundEffectsVolume: 1,
+    musicVolume: 0.3,
+    soundEffectsVolume: 0.7,
 }
 
 /**
@@ -40,7 +41,7 @@ export const DEFAULT_SETTINGS = {
  * 
  * Eventually it would be nice if we can have all variability in here, so game can be changed
  * (new terrain options, different sound effects/music, maps, different dice) just by changing
- * the game data
+ * the game data.
  */
 export const GAME_DATA = {
     terrainOptions: {
@@ -51,12 +52,13 @@ export const GAME_DATA = {
     },
     backgroundMusic: 'Equilibrium.wav',
     soundEffects: {
-        acknowledged: 'acknowledged.wav',
-        collision: 'collision.wav',
-        explosion: 'explosion.wav',
-        water: 'water.wav',
-        gameOver: 'game-over.mp3',
+        move: 'boingmachine.mp3',
+        collision: 'recall.mp3',
+        explosion: 'bomb.mp3',
+        water: 'smf.mp3',
+        gameOver: 'gameover_loud.mp3',
         dice: 'dice.mp3',
+        win: 'win_loud.mp3',
     },
     icons: {
         MoveOneCommand: '1-solid.svg',
@@ -75,7 +77,7 @@ export const GAME_DATA = {
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 3,
     diceAmount: 5,
-    turnTimeInMS: 500,
+    turnTimeInMS: 1000,
 }
 
 class GameManager {
@@ -108,6 +110,8 @@ class GameManager {
         for (let iconName in GAME_DATA.icons) {
             this.uiController.addIcon(iconName, GAME_DATA.icons[iconName]);
         }
+
+        this.audioController.addMusic('backgroundMusic', GAME_DATA.backgroundMusic);
 
         this.player = new Player('Player 1', new Location(0, 0));
     }
@@ -162,7 +166,7 @@ class GameManager {
             if (response.landedOnTerrain) {
                 switch (response.landedOnTerrain) {
                     case 'grass': 
-                        this.audioController.playClip('acknowledged');
+                        this.audioController.playClip('move');
                         break;
                     case 'water': 
                         this.audioController.playClip('water');
@@ -566,6 +570,7 @@ class MapCompletedState extends State {
 
     enter() {
         super.enter();
+        this.audioController.play('win');
     }
 
     update() {
@@ -592,6 +597,7 @@ class SetupState extends State {
 
     enter() {
         this.uiController.clearUI();
+        this.audioController.playMusic('backgroundMusic');
     }
 
     /**

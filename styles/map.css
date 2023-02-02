@@ -18,30 +18,46 @@
 /* Terrain Options - setting multiple colors as options for (almost) each terrain to have some variety */
 .grass {
     background-color: forestgreen;
+    background-image: url('../assets/images/tiles/Grass\ Texture\ 1.jpg');
+    background-size: cover;
 }
 .grass2 {
     background-color: rgb(28, 155, 28);
+    background-image: url('../assets/images/tiles/Grass\ Texture\ 2.jpg');
+    background-size: cover;
 }
 .grass3 {
     background-color: rgb(43, 172, 43);
+    background-image: url('../assets/images/tiles/Grass\ Texture\ 4.jpg');
+    background-size: cover;
 }
 
 .water {
     background-color: blue;
+    background-image: url('../assets/images/tiles/water.png');
+    background-size: cover;
 }
 .water2 {
     background-color: rgb(57, 57, 252);
+    background-image: url('../assets/images/tiles/water2.png');
+    background-size: cover;
 }
 
 .rock {
     background-color: rgb(80, 78, 78);
+    background-image: url('../assets/images/tiles/rock3.png');
+    background-size: cover;
 }
 .rock2 {
     background-color: rgb(62, 60, 60);
+    background-image: url('../assets/images/tiles/rock4.png');
+    background-size: cover;
 }
 
 .lava {
     background-color: firebrick;
+    background-image: url('../assets/images/tiles/lava.png');
+    background-size: cover;
 }
 
 

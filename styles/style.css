@@ -80,7 +80,7 @@ nav {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 50px;
+    padding: 20px;
     font-size: 1rem;
     font-family: 'projectsfenotype';
 }
@@ -180,11 +180,19 @@ nav {
     #game-player-info {
         order: 0;
     }
+
+    nav {
+        padding: 50px;
+    }
 }
 
 @media (width >= 525px) {
     nav#navbar > .game-logo  {
         font-size: 1.5rem;
+    }
+
+    nav {
+        padding: 30px;
     }
 }
 

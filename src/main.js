@@ -32,7 +32,7 @@ const settings = {
 // setting up AudioController for sound effects and music
 const audioController = new AudioController(settings);
 settings.audioController = audioController;
-if (GAME_DATA.backgroundMusic) audioController.addMusic('background', GAME_DATA.backgroundMusic);
+
 
 // to initialize the setting inputs with default values, we set the inputs once on load with values from settings
 generateInputValuesFromSettings();
@@ -95,8 +95,8 @@ function saveSettings() {
         audioController.setSoundEffectVolume(settings.soundEffectsVolume);
     }    
 
-    if (settings.music) audioController.playMusic('background');
-    else if (!settings.music) audioController.pauseMusic('background');
+    if (settings.music) audioController.playMusic('backgroundMusic');
+    else if (!settings.music) audioController.pauseMusic('backgroundMusic');
 
     dlgSettings.close();
 }
