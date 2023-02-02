@@ -19,8 +19,8 @@ export function getRandomArrayElement(arr) {
  * playClip will play the corresponding sound clip if and only if the current setting
  * for sound effects is enabled AND the sound effect was set up previously via addClip
  */
-// TODO Right now, the Audio Controller also works as a kind of Asset Pool, would be good to extract 
-// that to an actual AssetPool class
+// TODO Right now, the Audio Controller also works as a kind of Asset Pool for audio data, 
+// would be good to extract that to an actual AssetPool class
 export class AudioController {
     constructor(settings) {
         this.settings = settings;

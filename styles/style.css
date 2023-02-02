@@ -167,7 +167,30 @@ nav {
     height: 50vh;
 }
 
+dialog {
+    border-radius: 20px;
+    padding: 40px;
+}
 
+#dlg-enter-game-over-state::backdrop {
+    backdrop-filter: sepia(1) brightness(50%) blur(2px);
+}
+
+#dlg-settings::backdrop {
+    backdrop-filter: brightness(40%) blur(1px);
+}
+
+#dlg-enter-map-complete-state::backdrop {
+    backdrop-filter: brightness(40%) blur(2px);
+}
+
+#dlg-enter-execute-state::backdrop {
+    backdrop-filter: brightness(60%);
+}
+
+#dlg-enter-input-state::backdrop {
+    backdrop-filter: brightness(40%);
+}
 
 @media (width >= 1200px) {
     /* If the width gets big enough, put controls next to the grid instead of below */
