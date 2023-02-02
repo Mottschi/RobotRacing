@@ -77,7 +77,7 @@ export const GAME_DATA = {
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 3,
     diceAmount: 5,
-    turnTimeInMS: 1000,
+    turnTimeInMS: 500,
 }
 
 class GameManager {
@@ -570,7 +570,7 @@ class MapCompletedState extends State {
 
     enter() {
         super.enter();
-        this.audioController.play('win');
+        this.audioController.playClip('win');
     }
 
     update() {

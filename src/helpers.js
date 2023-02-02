@@ -265,7 +265,7 @@ export class UIController {
     movePlayerSprite(player) {
         const {row, column} = player.location;
 
-        document.querySelector(`[row='${row}'][column='${column}'`).appendChild(this.elements.player);
+        document.querySelector(`[row='${row}'][column='${column}'`).prepend(this.elements.player);
     }
 
     /**
