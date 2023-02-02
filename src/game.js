@@ -114,11 +114,10 @@ class GameManager {
         this.audioController.addMusic('backgroundMusic', GAME_DATA.backgroundMusic);
 
         this.player = new Player('Player 1', new Location(0, 0));
+        this.uiController.updateCompletedMaps(this.mapsCompleted);
     }
 
     setupNextMap() {
-        this.uiController.updateCompletedMaps(this.mapsCompleted);
-
         if (this.mapsCompleted > 2) {
             // when we load a random game board, the size depends on settings
             this.rows = this.settings.rows ? this.settings.rows : DEFAULT_SETTINGS.rows;
@@ -227,6 +226,7 @@ class GameManager {
         if (this.player.location.equal(this.gameBoard.flagLocation)) {
             this.state.exit(true);
             this.mapsCompleted++;
+            this.uiController.updateCompletedMaps(this.mapsCompleted);
             this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController, this.mapsCompleted);
             this.state.enter();
         }

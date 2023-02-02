@@ -220,7 +220,9 @@ export class UIController {
         }
 
         const {row, column} = gameBoard.flagLocation;
-        document.querySelector(`[row='${row}'][column='${column}'`).setAttribute('id', 'flag');
+        const flagTile = document.createElement('div');
+        flagTile.setAttribute('id', 'flag');
+        document.querySelector(`[row='${row}'][column='${column}'`).appendChild(flagTile);
     }
 
     /**

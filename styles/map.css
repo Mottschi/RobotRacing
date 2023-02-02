@@ -90,5 +90,6 @@
     background-image: var(--goal-sprite);
     background-repeat: no-repeat;
     background-size: contain;
-    background-color: forestgreen;
+    width: var(--tile-size);
+    height: var(--tile-size);
 }
