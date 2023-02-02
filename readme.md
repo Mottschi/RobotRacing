@@ -1,7 +1,7 @@
 # RobotRacing
 
 ## About the Game
-In RobotRacing, you will give commands to a little robot, trying to guide him through a landscape and to the finish flags ![finish flags](/assets/images/flag2.png). Make sure to avoid running into any obstacles on your way!
+In RobotRacing, you will give commands to a little robot, trying to guide him through a landscape and to the finish flags. Make sure to avoid running into any obstacles on your way!
 
 This game was developed within one week as my first project during the [Ironhack](https://www.ironhack.com/en) web development bootcamp.
 
