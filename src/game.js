@@ -227,7 +227,10 @@ class GameManager {
         if (this.player.location.equal(this.gameBoard.flagLocation)) {
             this.state.exit(true);
             this.mapsCompleted++;
-            this.player.lifes = Math.min(this.player.life + 1, GAME_DATA.maxLife);
+            console.log('map completed with lifes remaining:', this.player.lifes);
+            this.player.lifes = Math.min(this.player.lifes + 1, GAME_DATA.maxLife);
+            console.log('player lives now at', this.player.lifes);
+            this.uiController.updatePlayerLifes(this.player);
             this.uiController.updateCompletedMaps(this.mapsCompleted);
             this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController, this.mapsCompleted);
             this.state.enter();
