@@ -324,7 +324,7 @@ class RandomGameBoard extends GameBoard {
                 // instead of hardcoding it
                 if (rng > .98) type = this.terrain.lava;
                 else if (rng > .93) type = this.terrain.rock
-                else if (rng > .78) type = this.terrain.water;
+                else if (rng > .18) type = this.terrain.water;
                 currentRow.push(new Tile(row, column, type))
             }
         }
@@ -338,7 +338,39 @@ class RandomGameBoard extends GameBoard {
     makeSureMapIsSolvable(){
         // A* would be nice here, but time is not sufficient for that
         // will need to force a path instead
-        
+        let currentLocation = new Location(this.startingLocation.row, this.startingLocation.column);
+        let moveCount = 0;
+        while (currentLocation.row > 0) {
+            moveCount++;
+            console.log(currentLocation)
+            // switch between moving up and sideways
+            const stepSize = Math.floor(Math.random() * 3 + 1)
+            if (moveCount % 2) {
+                // for even movecounts, we go up
+                for (let i = 0; i < stepSize; i++) {
+                    if (currentLocation.row > 0) currentLocation.row--;
+                    this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
+                }
+            } else {
+                // move towards a random side, with a slant to go to the left (as flag tile will start leftish and player rightish)
+                if (Math.random() > 0.25) {
+                    for (let i = 0; i < stepSize; i++) {
+                        if (currentLocation.column > 0) currentLocation.column--;
+                        this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
+                    }
+                } else {
+                    for (let i = 0; i < stepSize; i++) {
+                        if (currentLocation.column < this.columns - 1) currentLocation.column++;
+                        console.log(this.board[currentLocation.row][currentLocation.column])
+                        this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
+                    }
+                }
+
+            }
+        }
+
+        // TODO now that we are at the top row, we just need to move directly straight to the flag tile
+
     }
 }
 
