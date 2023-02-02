@@ -57,6 +57,7 @@ export class AudioController {
         if (this.musicTracks[name]) this.removeMusic(name);
         const audioElement = new Audio(`${this.musicPath}/${filename}`);
         audioElement.volume = this.musicVolume;
+        audioElement.loop=true;
         this.musicTracks[name] = audioElement;
     }
 
