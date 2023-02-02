@@ -25,8 +25,8 @@ class Terrain {
  * - the next new game: rows, columns, randomMap, players (if I get to that point...)
  */
 export const DEFAULT_SETTINGS = {
-    rows: 10,
-    columns: 10,
+    rows: 20,
+    columns: 20,
     randomMap: false,
     music: true,
     soundEffects: true,
@@ -91,7 +91,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.mapsCompleted = 0;
+        this.mapsCompleted = 3;
 
         this.audioController = settings.audioController;
         
@@ -268,7 +268,7 @@ class GameBoard {
             this.board[this.rows-1][this.columns-1] = new Tile(0, 0, GAME_DATA.terrainOptions['grass']);
         }
 
-        this.startingLocation = startTile;
+        this.startingLocation = new Location(startTile.row, startTile.column);
     }
 
     // similar to starting location, but with top left alignment instead of bottom right
@@ -279,7 +279,7 @@ class GameBoard {
             this.board[0][0] = new Tile(0, 0, GAME_DATA.terrainOptions['grass']);
             flagTile = this.board[0][0];
         }
-        this.flagLocation = flagTile;
+        this.flagLocation = new Location(flagTile.row, flagTile.column);
     }
 
     
@@ -328,6 +328,17 @@ class RandomGameBoard extends GameBoard {
                 currentRow.push(new Tile(row, column, type))
             }
         }
+    }
+
+    init() {
+        super.init();
+        this.makeSureMapIsSolvable();
+    }
+
+    makeSureMapIsSolvable(){
+        // A* would be nice here, but time is not sufficient for that
+        // will need to force a path instead
+        
     }
 }
 
@@ -605,6 +616,15 @@ class Location {
     constructor(row, column) {
         this.row = row;
         this.column = column;
+    }
+
+    /**
+     * The Manhattan distance (distance in a system where we can only go orthogonally) between two locations.
+     * @param {Location} other 
+     * @returns 
+     */
+    manhattanDistance(other) {
+        return Math.abs(other.row - this.row) + Math.abs(other.column - this.column);
     }
 
 
