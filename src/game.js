@@ -76,6 +76,7 @@ export const GAME_DATA = {
     },
     playerSprites: ['robot_3Dred', 'robot_3Dyellow'],
     startingLife: 3,
+    maxLife: 5,
     diceAmount: 5,
     turnTimeInMS: 500,
 }
@@ -226,67 +227,11 @@ class GameManager {
         if (this.player.location.equal(this.gameBoard.flagLocation)) {
             this.state.exit(true);
             this.mapsCompleted++;
+            this.player.lifes = Math.max(this.player.life + 1, GAME_DATA.maxLife);
             this.uiController.updateCompletedMaps(this.mapsCompleted);
             this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController, this.mapsCompleted);
             this.state.enter();
         }
-    }
-
-    devControls() {
-        // resetting event listeners on the buttons to avoid multiple player characters showing on later games
-        // TODO test out if this is still necessary once the actual rolling dice for input is done
-        document.getElementById('game-inputs').innerHTML += '';
-
-        // NOTE temp dev code
-        const btnLeft = document.querySelector('#btn-turn-left');
-        const btnRight = document.querySelector('#btn-turn-right');
-        const btnMove1 = document.querySelector('#btn-move-1');
-        const btnMove2 = document.querySelector('#btn-move-2');
-        const btnMove3 = document.querySelector('#btn-move-3');
-        const btnMoveBack = document.querySelector('#btn-move-backwards');
-
-        btnLeft.addEventListener('click', ()=>{
-            const command = new TurnLeftCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.alignPlayerSprite(this.player);
-        })
-
-        btnRight.addEventListener('click', ()=>{
-            const command = new TurnRightCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.alignPlayerSprite(this.player);
-        })
-
-        btnMove1.addEventListener('click', ()=>{
-            const originalPosition = {...this.player.location};
-            const command = new MoveOneCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        })
-
-        btnMove2.addEventListener('click', ()=>{
-            const originalPosition = {...this.player.location};
-            const command = new MoveTwoCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        })
-
-        btnMove3.removeEventListener('click', m3);
-        btnMove3.addEventListener('click', m3.bind(this))
-
-        function m3() {
-            const originalPosition = {...this.player.location};
-            const command = new MoveThreeCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        }
-
-        btnMoveBack.addEventListener('click', ()=> {
-            const originalPosition = {...this.player.location};
-            const command = new MoveBackwardsCommand(this.player, this.gameBoard);
-            command.execute();
-            this.uiController.movePlayerSprite(this.player, originalPosition);
-        })
     }
 }
 
