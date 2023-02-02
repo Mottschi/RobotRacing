@@ -5,6 +5,10 @@ In RobotRacing, you will give commands to a little robot, trying to guide him th
 
 This game was developed within one week as my first project during the [Ironhack](https://www.ironhack.com/en) web development bootcamp.
 
+### Inspiration
+
+The idea of having a game with a robot being controlled by chosing from randomly selected inputs was inspired by [RoboRally](https://boardgamegeek.com/boardgame/18/roborally).
+
 ## How to play
 RobotRacing is a turn-based game. Every turn, you will roll a number of six-sided dice, which will each display any one of the following symbols:
 
@@ -143,3 +147,21 @@ Robot icon (no changes made) created by Omara Abderraouf and distributed via CC 
 ***
 ## Play the game
 [Click here](https://mottschi.github.io/ironhack-project-1-robot-race/) to play the game.
+
+***
+
+##  Reflections
+
+- I tried to split the game logic from the interaction with the UI/Website, any DoM-manipulation used to display the game information is found in the UIController in the helper.js, while the actual game logic is found in game.js. Unfortunately, the code is still pretty
+
+- The game uses a the [state pattern](https://gameprogrammingpatterns.com/state.html) to change between input and command execution states, as well as the map setup, completion, game over states, while the main game engine is simply keeping the game loop alive with calls to its update-method via a set interval. This was my first time implementing this pattern.
+
+- The actual implementation is a bit messy, but given the circumstances (strict time limit for the project, first project of the bootcamp), I would say it works reasonably well.
+
+### Possible Additions
+
+There were a lot of ideas on my "would be nice to have" list that I did not get around to implementing. Some of the more interesting examples:
+
+- 2 Player Mode
+- Powerups to collect on the map (extra lifes, extra dice, dice with different movement options/distribution, temporary invulnerability)
+- Time limit during the "choose your moves" phase to add some pressure.
