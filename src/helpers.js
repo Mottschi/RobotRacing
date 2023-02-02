@@ -96,9 +96,11 @@ export class UIController {
     constructor() {
         this.rows = 10;
         this.columns = 10;
-        this.root = document.querySelector(':root');
         this.dialogs = {};
         this.icons = {};
+        this.elements = {
+            root: document.querySelector(':root'),
+        }
 
         // This path is used in the DOM, so uses path from project root
         this.iconPath = './assets/images/icons';
@@ -124,7 +126,7 @@ export class UIController {
      * @param {Player} player 
      */
     setupNewMap(gameBoard, player) {
-        this.root.style.setProperty('--visibleWhileGameIsRunning', 'visible');
+        this.elements.root.style.setProperty('--visibleWhileGameIsRunning', 'visible');
         const {rows, columns} = gameBoard.getDimension();
         this.rows = rows;
         this.columns = columns;
@@ -148,7 +150,7 @@ export class UIController {
         document.getElementById('game-player-info').classList.add('inactive');
         document.getElementById('game-board-container').classList.add('inactive');
 
-        this.root.style.setProperty('--background-image', 'var(--title-scene)');
+        this.elements.root.style.setProperty('--background-image', 'var(--title-scene)');
 
         window.addEventListener('keydown', (event)=>{
             if (event.code === 'Space') callback();
@@ -169,7 +171,7 @@ export class UIController {
         document.getElementById('game-player-info').classList.remove('inactive');
         document.getElementById('game-board-container').classList.remove('inactive');
 
-        this.root.style.setProperty('--background-image', 'var(--gradient)');
+        this.elements.root.style.setProperty('--background-image', 'var(--gradient)');
     }
 
     /**
@@ -180,8 +182,8 @@ export class UIController {
 
         // setting up the CSS variables to adjust the grid to the rows, columns 
         // and tile size chosen in settings
-        this.root.style.setProperty('--columns', this.columns);
-        this.root.style.setProperty('--rows', this.rows);
+        this.elements.root.style.setProperty('--columns', this.columns);
+        this.elements.root.style.setProperty('--rows', this.rows);
                 
         // reset the grid container, in case there was already something in there from a previous round
         boardContainer.innerHTML = '';
@@ -226,8 +228,15 @@ export class UIController {
      * @param {Player} player 
      */
     initializePlayer(player) {
+        // check if there is already a player div in the dom - if so, use that, if not, create one
+        if (document.getElementById('player')) this.elements.player = document.getElementById('player');
+        else {
+            this.elements.player = document.createElement('div');
+            this.elements.player.setAttribute('id', 'player');
+        }
+
         const sprite = `${this.playerImagePath}/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
-        this.root.style.setProperty('--player-original-sprite', `url('${sprite}')`);
+        this.elements.root.style.setProperty('--player-original-sprite', `url('${sprite}')`);
         this.alignPlayerSprite(player);
         this.movePlayerSprite(player);
         this.updatePlayerLifes(player);
@@ -253,9 +262,8 @@ export class UIController {
      */
     movePlayerSprite(player) {
         const {row, column} = player.location;
-        const oldLocation = document.getElementById('player');
-        if (oldLocation) oldLocation.removeAttribute('id', 'player');
-        document.querySelector(`[row='${row}'][column='${column}'`).setAttribute('id', 'player');
+
+        document.querySelector(`[row='${row}'][column='${column}'`).appendChild(this.elements.player);
     }
 
     /**
@@ -265,11 +273,11 @@ export class UIController {
      */
     alignPlayerSprite(player) {
         const sprite = `${this.playerImagePath}/${player.sprite}-${DIRECTIONS[player.facingDirection]}.png`
-        this.root.style.setProperty('--player-sprite', `url('${sprite}')`);
+        this.elements.root.style.setProperty('--player-sprite', `url('${sprite}')`);
     }
 
     showDevTools() {
-        this.root.style.setProperty('--dev-display', 'block');
+        this.elements.root.style.setProperty('--dev-display', 'block');
     }
 
     showDialog(name) {
@@ -341,6 +349,13 @@ export class UIController {
         });
     }
 
+
+    /**
+     * Calculates a tile size that will work best with the available height and width.
+     */
+    // (Could probably be better implemented via CSS, but I started the project with the 
+    // ability to modify tileSize through settings and changed very late in the project,
+    // so I did not want to go make too big a change)
     setTileSize(){
         const availableWidth = window.innerWidth - (window.innerWidth < 1200 ? 0 : 400);
         const availableHeight = window.innerHeight - document.querySelector('nav').offsetHeight
@@ -348,6 +363,6 @@ export class UIController {
         const tileSizeWidth = availableWidth / (this.columns + 2);
         const tileSizeHeight = availableHeight / (this.rows);
         const tileSize = Math.floor(Math.min(tileSizeHeight, tileSizeWidth));
-        this.root.style.setProperty('--tile-size', `${tileSize}px`);
+        this.elements.root.style.setProperty('--tile-size', `${tileSize}px`);
     }
 }

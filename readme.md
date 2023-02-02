@@ -12,6 +12,9 @@ Website design and programming by Sebastian Mottschall
 
 ### Images
 
+#### Title Screen
+Title Screen image created by [Dall-E 2](https://openai.com/dall-e-2/)
+
 #### Sprites
 Robot pack
 by Kenney Vleugels for Kenney (www.kenney.nl)

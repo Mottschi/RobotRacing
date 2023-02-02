@@ -66,6 +66,8 @@
     background-image: var(--player-sprite);
     background-repeat: no-repeat;
     background-size: contain;
+    width: var(--tile-size);
+    height: var(--tile-size);
 }
 
 /* The container for the divs holding the players lifes */
