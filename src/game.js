@@ -227,9 +227,7 @@ class GameManager {
         if (this.player.location.equal(this.gameBoard.flagLocation)) {
             this.state.exit(true);
             this.mapsCompleted++;
-            console.log('map completed with lifes remaining:', this.player.lifes);
             this.player.lifes = Math.min(this.player.lifes + 1, GAME_DATA.maxLife);
-            console.log('player lives now at', this.player.lifes);
             this.uiController.updatePlayerLifes(this.player);
             this.uiController.updateCompletedMaps(this.mapsCompleted);
             this.state = new MapCompletedState(this.player, this.uiController, this.gameBoard, this.audioController, this.mapsCompleted);
@@ -324,7 +322,7 @@ class RandomGameBoard extends GameBoard {
                 // instead of hardcoding it
                 if (rng > .95) type = this.terrain.lava;
                 else if (rng > .85) type = this.terrain.rock
-                else if (rng > .70) type = this.terrain.water;
+                else if (rng > .10) type = this.terrain.water;
                 currentRow.push(new Tile(row, column, type))
             }
         }
@@ -342,7 +340,6 @@ class RandomGameBoard extends GameBoard {
         let moveCount = 0;
         while (currentLocation.row > 0) {
             moveCount++;
-            console.log(currentLocation)
             // switch between moving up and sideways
             const stepSize = Math.floor(Math.random() * 3 + 1)
             if (moveCount % 2) {
@@ -353,7 +350,7 @@ class RandomGameBoard extends GameBoard {
                 }
             } else {
                 // move towards a random side, with a slant to go to the left (as flag tile will start leftish and player rightish)
-                if (Math.random() > 0.25) {
+                if (Math.random() > 0.35) {
                     for (let i = 0; i < stepSize; i++) {
                         if (currentLocation.column > 0) currentLocation.column--;
                         this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
@@ -361,7 +358,6 @@ class RandomGameBoard extends GameBoard {
                 } else {
                     for (let i = 0; i < stepSize; i++) {
                         if (currentLocation.column < this.columns - 1) currentLocation.column++;
-                        console.log(this.board[currentLocation.row][currentLocation.column])
                         this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
                     }
                 }
