@@ -78,7 +78,7 @@ export const GAME_DATA = {
     startingLife: 3,
     maxLife: 5,
     diceAmount: 5,
-    turnTimeInMS: 1000,
+    turnTimeInMS: 750,
 }
 
 class GameManager {
