@@ -1,8 +1,3 @@
-/*
-* Default settings - can be adjusted (all at once or individually) when calling 
-* the GameManager constructor
-*/
-
 import { getRandomArrayElement, UIController } from "./helpers.js";
 
 import easyMap from '../assets/maps/easy.js';
@@ -283,6 +278,9 @@ class GameBoard {
     
 }
 
+/**
+ * Pregenerated game boards.
+ */
 class DefaultGameBoard extends GameBoard {
     constructor(terrain, map) {
         super(terrain);
@@ -305,6 +303,9 @@ class DefaultGameBoard extends GameBoard {
     }
 }
 
+/**
+ * Randomly generated game boards
+ */
 class RandomGameBoard extends GameBoard {
     constructor(terrain, rows, columns) {
         super(terrain);
@@ -322,7 +323,7 @@ class RandomGameBoard extends GameBoard {
                 // instead of hardcoding it
                 if (rng > .95) type = this.terrain.lava;
                 else if (rng > .85) type = this.terrain.rock
-                else if (rng > .10) type = this.terrain.water;
+                else if (rng > .70) type = this.terrain.water;
                 currentRow.push(new Tile(row, column, type))
             }
         }
@@ -333,6 +334,10 @@ class RandomGameBoard extends GameBoard {
         this.makeSureMapIsSolvable();
     }
 
+    /**
+     * To avoid displaying a map that cannot be solved, this force a path from players location
+     * to the flags location.
+     */
     makeSureMapIsSolvable(){
         // A* would be nice here, but time is not sufficient for that
         // will need to force a path instead
@@ -375,8 +380,13 @@ class RandomGameBoard extends GameBoard {
     }
 }
 
+/**
+ * Holds the information for a single tile (it's location as well as information about it's terrain).
+ */
 class Tile {
     constructor(row, column, terrain) {
+        // TODO refactor to use Location class (simple change here, but will need to make sure that all
+        // code that access a tiles location is also adapted)
         this.row = row;
         this.column = column;
         if (terrain) this.terrainClass = getRandomArrayElement(terrain.classes);
@@ -431,6 +441,9 @@ class State {
     }
 }
 
+/**
+ * The state during which a player is able to select which commands he want to use.
+ */
 class InputState extends State {
     /**
      * Create a new input state.
@@ -456,14 +469,13 @@ class InputState extends State {
         // 3. display dice results
         this.uiController.showDiceResults(commandOptions, this.chooseCommand.bind(this));
 
-        // 4. set up the event handlers so that player can pick order of execution for his commands
-
-
-        // 5. set up event handler that will allow player to confirm his moves after order is picked. 
-        //    this will then call the states exit() method
     }
 
-    chooseCommand(index, command) {
+    /**
+     * Event Handler that will be used when player clicks on a dice result.
+     * @param {Command} command 
+     */
+    chooseCommand(command) {
         this.commandQueue.push(command);
         this.uiController.updateChosenDiceResults(this.commandQueue);
     }
@@ -478,6 +490,9 @@ class InputState extends State {
     }
 }
 
+/**
+ * The state during which the game executes the chosen commands.
+ */
 class ExecuteCommandQueueState extends State {
     /**
      * Create a new state to execute all commands of a command queue
@@ -528,6 +543,9 @@ class ExecuteCommandQueueState extends State {
     }
 }
 
+/**
+ * The state when the game has just ended, before returning to idle/title scene
+ */
 class GameOverState extends State {
     constructor (player, uiController, gameBoard, audioController) {
         super(player, uiController, gameBoard, audioController);
@@ -553,6 +571,9 @@ class GameOverState extends State {
     }
 }
 
+/**
+ * The state when the player succesfully completes a game, before next map is set up.
+ */
 class MapCompletedState extends State {
     constructor (player, uiController, gameBoard, audioController, mapsCompleted) {
         super(player, uiController, gameBoard, audioController);
@@ -581,6 +602,9 @@ class MapCompletedState extends State {
     }
 }
 
+/**
+ * The state during which the game sets up the next map.
+ */
 class SetupState extends State {
     constructor(player, uiController, gameBoard, audioController){
         super(player, uiController, gameBoard, audioController);
@@ -665,6 +689,7 @@ class Location {
         return this.row === other.row && this.column === other.column;
     }
 }
+
 
 class Player {
     constructor(name, location) {

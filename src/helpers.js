@@ -35,6 +35,13 @@ export class AudioController {
 
     }
 
+    /**
+     * Creates an audio element for a sound effect linked to the given file and saves a
+     * reference to that element in the AudioControllers asset pool, to be able to access
+     * it later on.
+     * @param {string} name 
+     * @param {string} filename 
+     */
     addClip(name, filename) {
         if (this.clips[name]) this.removeClip(name);
         const audioElement = new Audio(`${this.soundPath}/${filename}`);
@@ -42,10 +49,19 @@ export class AudioController {
         this.clips[name] = audioElement;
     }
 
+    /**
+     * Removes an audio element for a sound effect from the AudioControllers asset pool.
+     * @param {string} name 
+     */
     removeClip(name) {
         delete this.clips[name];
     }
 
+    /**
+     * Plays a clip from the AudioControllers asset pool, if it exists.
+     * Does nothing if sound effects are turned off in the settings.
+     * @param {string} name 
+     */
     playClip(name) {
         if (this.settings.soundEffects && this.clips[name]) {
             this.clips[name].play();
@@ -53,6 +69,13 @@ export class AudioController {
         }
     }
 
+    /**
+     * Creates an audio element for a music track linked to the given file and 
+     * saves a reference to that element in the AudioControllers asset pool, to 
+     * be able to access it later on.
+     * @param {string} name 
+     * @param {string} filename 
+     */
     addMusic(name, filename) {
         if (this.musicTracks[name]) this.removeMusic(name);
         const audioElement = new Audio(`${this.musicPath}/${filename}`);
@@ -61,26 +84,53 @@ export class AudioController {
         this.musicTracks[name] = audioElement;
     }
 
+    /**
+     * Removes an audio element for a music track from the AudioControllers asset pool.
+     * @param {string} name 
+     */
     removeMusic(name) {
         delete this.musicTracks[name];
     }
 
+    /**
+     * Start playing a music track from the AudioControllers asset pool, if it exists in
+     * the pool.
+     * Does nothing if music is turned off in the settings.
+
+     * Music is set to loop continiously (or until stopped).
+     * @param {string} name 
+     */
     playMusic(name) {
+        // TODO to future proof, would be good to stop playing currently active track when starting
+        // a new one (this project only has a single track, but if we add more, this will need to be adjusted)
         if (this.settings.music && this.musicTracks[name]) this.musicTracks[name].play();
     }
 
+    /**
+     * Stops playing a music track, if that music track is found in the asset pool.
+     * @param {string} name 
+     */
     pauseMusic(name) {
         if (this.musicTracks[name]) this.musicTracks[name].pause();
     }
 
+    /**
+     * Sets the volume to be used for music tracks.
+     * This will effect the current track being played as well as future ones.
+     * @param {number} volume 
+     */
     setMusicVolume(volume) {
-        // for music, the volume is adjusted on change of the setting
         if (volume) {
             this.musicVolume = volume;
             Object.values(this.musicTracks).forEach((audio)=>audio.volume = volume);
         }
     }
 
+    /**
+     * Sets the volume to be used for the sound effects.
+     * Has no effect on clips already playing the moment the setting is activated.
+     * @param {number} volume
+     */
     setSoundEffectVolume(volume) {
         // for sound effects, the volume is adjusted directly on playing them
         if (volume) this.soundEffectsVolume = volume;
@@ -133,8 +183,6 @@ export class UIController {
         this.columns = columns;
         this.generateGrid();
 
-        // to make sure the board we draw will fit exactly into its container, we calculate 
-        // tileSize based on container width
         this.setTileSize()
 
         this.drawBoard(gameBoard);
@@ -319,10 +367,10 @@ export class UIController {
 
         diceResultContainer.innerHTML = '';
 
-        commands.forEach((command, index) => {
+        commands.forEach((command) => {
             const newIconNode = this.icons[command.name].cloneNode(true);
             newIconNode.addEventListener('click', ()=>{
-                chooseCommand(index, command);
+                chooseCommand(command);
                 newIconNode.classList.add('chosen');
             })
             diceResultContainer.appendChild(newIconNode);
@@ -357,7 +405,7 @@ export class UIController {
      * Calculates a tile size that will work best with the available height and width.
      */
     // (Could probably be better implemented via CSS, but I started the project with the 
-    // ability to modify tileSize through settings and changed very late in the project,
+    // ability to modify tileSize through settings and changed this very late in the project,
     // so I did not want to go make too big a change)
     setTileSize(){
         const availableWidth = window.innerWidth - (window.innerWidth < 1200 ? 0 : 400);
