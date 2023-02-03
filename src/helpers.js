@@ -251,7 +251,7 @@ export class UIController {
      */
     updatePlayerLifes(player) {
         const lifesElement = document.querySelector('#lifes');
-        document.querySelector('#game-lifes').querySelector('h2').textContent = 'Lifes:';
+        document.querySelector('#game-lifes').querySelector('h2').textContent = 'Health:';
         lifesElement.innerHTML = '';
         for (let i = 0; i < player.lifes; i++) {
             const newDiv = document.createElement('div');

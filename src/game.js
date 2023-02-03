@@ -535,7 +535,7 @@ class ExecuteCommandQueueState extends State {
 class GameOverState extends State {
     constructor (player, uiController, gameBoard, audioController) {
         super(player, uiController, gameBoard, audioController);
-        this.dialogName = 'enterGameOverState'
+        this.dialogName = 'enterGameOverState';
     }
 
     enter() {
@@ -548,8 +548,8 @@ class GameOverState extends State {
      */ 
     update() {
         super.update();
-        if (this.updateCount === 3) this.audioController.playClip('gameOver');
-        if (this.updateCount === 8) return {stateFinished: true}
+        if (this.updateCount === 1) this.audioController.playClip('gameOver');
+        if (this.updateCount === 4) return {stateFinished: true}
     }
 
     exit() {
