@@ -308,6 +308,14 @@ export class UIController {
     }
 
     /**
+     * Hide the player lifes, to be used during transitions from one map to the next
+     */
+    hidePlayerLifes() {
+        document.querySelector('#game-lifes').querySelector('h2').textContent = '';
+        document.querySelector('#lifes').innerHTML = '';
+    }
+
+    /**
      * Draws the player sprite at his current location.
      * @param {Player} player 
      */

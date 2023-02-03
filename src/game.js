@@ -598,6 +598,7 @@ class MapCompletedState extends State {
 
     exit() {
         // time to move on to next map
+        this.uiController.hidePlayerLifes();
         return new SetupState(this.player, this.uiController, this.gameBoard, this.audioController);
     }
 }
