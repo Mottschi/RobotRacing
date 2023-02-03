@@ -91,7 +91,7 @@ class GameManager {
 
         this.intervalID = null;
         this.state = null;
-        this.mapsCompleted = 3;
+        this.mapsCompleted = 0;
 
         this.audioController = settings.audioController;
         
@@ -322,9 +322,9 @@ class RandomGameBoard extends GameBoard {
 
                 // TODO Find a way to move the terrain rarity to game data (terrain options)
                 // instead of hardcoding it
-                if (rng > .98) type = this.terrain.lava;
-                else if (rng > .93) type = this.terrain.rock
-                else if (rng > .18) type = this.terrain.water;
+                if (rng > .95) type = this.terrain.lava;
+                else if (rng > .85) type = this.terrain.rock
+                else if (rng > .70) type = this.terrain.water;
                 currentRow.push(new Tile(row, column, type))
             }
         }
@@ -369,8 +369,13 @@ class RandomGameBoard extends GameBoard {
             }
         }
 
-        // TODO now that we are at the top row, we just need to move directly straight to the flag tile
-
+        // now that we are at the top row, we just need to move directly straight to the flag tile
+        const stepsNeeded = currentLocation.manhattanDistance(this.flagLocation);
+        const stepSize = currentLocation.column < this.flagLocation.column ? 1 : -1;
+        for (let i = 0; i < stepsNeeded; i++) {
+            currentLocation.column += stepSize;
+            this.board[currentLocation.row][currentLocation.column] = new Tile(currentLocation.row, currentLocation.column, GAME_DATA.terrainOptions['grass']);
+        }
     }
 }
 
